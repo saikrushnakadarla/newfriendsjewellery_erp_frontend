@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import baseURL from "../../../Url/NodeBaseURL";
 // import backgroundImage from './sadashribg-2.jpg';
-import backgroundImage from './iiiQbets.jpeg';
+import backgroundImage from '../Images/newfriends_login_logo.jpg';
 import googleImage from './Logo/google.png';
 import Swal from 'sweetalert2';
 import { AuthContext } from './Context';

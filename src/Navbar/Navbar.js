@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { FaSignOutAlt } from "react-icons/fa";
 // import logo from './sadashri.png';
-import logo from './Company_logo.png';
+import logo from '../Components/Pages/Images/newfriends_logo.jpg';
 import './Navbar.css';
 import { AuthContext } from "../Components/Pages/Login/Context";
 import Swal from 'sweetalert2';
