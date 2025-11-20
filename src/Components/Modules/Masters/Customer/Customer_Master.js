@@ -5,6 +5,7 @@ import './Customer_Master.css';
 import axios from "axios";
 import { Row, Col, Button } from 'react-bootstrap';
 import baseURL from '../../../../Url/NodeBaseURL';
+import baseURL2 from '../../../../Url/NodeBaseURL2';
 import { FaUpload, FaTrash } from 'react-icons/fa';
 import Webcam from 'react-webcam';
 
@@ -39,7 +40,7 @@ function Customer_Master() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [states, setStates] = useState([]);
-  
+
   // Image upload state
   const [showWebcam, setShowWebcam] = useState(false);
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -47,8 +48,10 @@ function Customer_Master() {
   const [newImages, setNewImages] = useState([]); // Store new image files
   const webcamRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-useEffect(() => {
+
+  useEffect(() => {
     // Fetch existing customers to check for duplicate mobile numbers
     const fetchCustomers = async () => {
       try {
@@ -94,11 +97,11 @@ useEffect(() => {
             if (result.images) {
               // Check if images is an array (multiple images) or single image object
               const imagesArray = Array.isArray(result.images) ? result.images : [result.images];
-              
+
               // Extract URLs and filenames
               const imageUrls = imagesArray.map(img => img.url);
               const imageFilenames = imagesArray.map(img => img.filename);
-              
+
               setImagePreviews(imageUrls);
               setExistingImages(imageFilenames);
             }
@@ -237,7 +240,7 @@ useEffect(() => {
       }
       const blob = new Blob([ab], { type: mimeString });
       const file = new File([blob], `webcam-${Date.now()}.jpg`, { type: mimeString });
-      
+
       setImagePreviews([...imagePreviews, URL.createObjectURL(file)]);
       setNewImages([...newImages, file]);
       setShowWebcam(false);
@@ -258,7 +261,7 @@ useEffect(() => {
       updatedNew.splice(adjustedIndex, 1);
       setNewImages(updatedNew);
     }
-    
+
     // Remove preview
     const updatedPreviews = [...imagePreviews];
     updatedPreviews.splice(index, 1);
@@ -272,13 +275,16 @@ useEffect(() => {
       return;
     }
 
+    setIsSaving(true);
+
     try {
-      // Check for duplicate mobile (skip check if editing)
+      // Duplicate check (only on baseURL)
       if (!id) {
         const response = await fetch(`${baseURL}/get/account-details`);
         if (!response.ok) {
           throw new Error("Failed to fetch data for duplicate check.");
         }
+
         const result = await response.json();
         const isDuplicateMobile = result.some(
           (item) => item.mobile === formData.mobile && item.account_id !== id
@@ -290,57 +296,82 @@ useEffect(() => {
         }
       }
 
-      // Create FormData
+      // ------------------------------
+      // 1️⃣ Prepare FormData for MAIN DB
+      // ------------------------------
       const formDataToSend = new FormData();
-      
-      // Append all form fields
+
       Object.keys(formData).forEach(key => {
         if (formData[key] !== undefined && formData[key] !== null) {
           formDataToSend.append(key, formData[key]);
         }
       });
 
-      // Append new images
       newImages.forEach(image => {
-        formDataToSend.append('images', image);
+        formDataToSend.append("images", image);
       });
 
-      // Append existing images to keep as JSON string
       if (existingImages.length > 0) {
-        formDataToSend.append('imagesToKeep', JSON.stringify(existingImages));
+        formDataToSend.append(
+          "imagesToKeep",
+          JSON.stringify(existingImages)
+        );
       }
 
-      // Determine endpoint and method
-      const endpoint = id 
+      // ------------------------------
+      // 2️⃣ Main API call (with images)
+      // ------------------------------
+      const endpoint1 = id
         ? `${baseURL}/edit/account-details/${id}`
         : `${baseURL}/account-details`;
-      const method = id ? "PUT" : "POST";
 
-      // Make the request
-      const saveResponse = await fetch(endpoint, {
-        method,
+      const method1 = id ? "PUT" : "POST";
+
+      const response1 = await fetch(endpoint1, {
+        method: method1,
         body: formDataToSend,
-        // Don't set Content-Type header - let the browser set it with boundary
       });
 
-      if (!saveResponse.ok) {
-        const errorData = await saveResponse.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to save customer');
+      if (!response1.ok) {
+        const errorData = await response1.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed saving to main database");
       }
 
-      const result = await saveResponse.json();
-      alert(`Customer ${id ? "updated" : "created"} successfully!`);
-      
-      // Navigate back to customers table
-      const from = location.state?.from || "/customerstable";
-      navigate(from, {
-        state: { mobile: formData.mobile }
+      // ------------------------------
+      // 3️⃣ SECOND DB POST (JSON only)
+      // ------------------------------
+      const jsonPayload = { ...formData };
+
+      const response2 = await fetch(`${baseURL2}/add-account`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(jsonPayload),
       });
+
+      if (!response2.ok) {
+        console.warn("Warning: Failed to save data in second DB");
+        // We do NOT stop the flow — only warn
+      }
+
+      // ------------------------------
+      // ✔ SUCCESS
+      // ------------------------------
+      alert(`Customer ${id ? "updated" : "created"} successfully!`);
+
+      navigate(location.state?.from || "/customerstable", {
+        state: { mobile: formData.mobile },
+      });
+
     } catch (error) {
       console.error("Error:", error);
       alert(error.message || "An error occurred while processing the request.");
+    } finally {
+      setIsSaving(false); // 🔥 End loading
     }
   };
+
 
   const handleBack = () => {
     const from = location.state?.from || "/customerstable";
@@ -557,7 +588,7 @@ useEffect(() => {
                 onChange={handleChange}
               />
             </Col>
-            
+
             {/* Image Upload Section */}
             <Col md={12}>
               <div className="image-upload-section">
@@ -570,20 +601,20 @@ useEffect(() => {
                   accept="image/*"
                   multiple
                 />
-                <Button 
-                  variant="primary" 
+                <Button
+                  variant="primary"
                   onClick={() => fileInputRef.current.click()}
                   className="me-2"
                 >
                   <FaUpload /> Choose Images
                 </Button>
-                <Button 
-                  variant="secondary" 
+                <Button
+                  variant="secondary"
                   onClick={() => setShowWebcam(!showWebcam)}
                 >
                   <FaUpload /> Capture Photo
                 </Button>
-                
+
                 {showWebcam && (
                   <div className="webcam-container mt-3">
                     <Webcam
@@ -603,7 +634,7 @@ useEffect(() => {
                     </div>
                   </div>
                 )}
-                
+
                 {imagePreviews.length > 0 && (
                   <div className="image-previews mt-3">
                     <h6>Uploaded Images:</h6>
@@ -645,8 +676,9 @@ useEffect(() => {
             <button
               type="submit"
               className="cus-submit-btn"
+              disabled={isSaving}  // disable while saving
             >
-              {id ? 'Update' : 'Save'}
+              {isSaving ? (id ? "Updating..." : "Saving...") : (id ? "Update" : "Save")}
             </button>
           </div>
         </form>
