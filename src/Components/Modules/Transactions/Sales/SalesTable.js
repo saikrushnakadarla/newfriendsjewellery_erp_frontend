@@ -261,21 +261,21 @@ const RepairsTable = () => {
                 }}
               /> */}
               {/* Delete icon (only for ADMIN) */}
-              {isAdmin && (
+              {/* {isAdmin && ( */}
                 <FaTrash
                   style={{
                     cursor: 'pointer',
                     marginLeft: '10px',
                     color: 'red',
-                    color: isToday ? 'red' : 'gray',
+                    color: 'red',
                   }}
                   onClick={() => {
-                    if (isToday) {
+                    // if (isToday) {
                       handleDelete(row.original.invoice_number);
-                    }
+                    // }
                   }}
                 />
-              )}
+              {/* )} */}
             </div>
           );
         },

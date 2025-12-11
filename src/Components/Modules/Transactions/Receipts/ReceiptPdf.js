@@ -3,6 +3,7 @@ import { Page, Text, View, Document, StyleSheet, Image } from "@react-pdf/render
 import logo1 from '../../../../Components/Pages/Images/newfriends_logo.jpg';
 import QRCode from "qrcode";
 import { toWords } from "number-to-words";
+import baseURL from '../../../../Url/NodeBaseURL';
 
 const styles = StyleSheet.create({
   page: {
@@ -157,6 +158,9 @@ const styles = StyleSheet.create({
 const PDFContent = ({ formData }) => {
   const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true); // State for loading
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const generateQRCode = async () => {
@@ -185,6 +189,26 @@ const PDFContent = ({ formData }) => {
 
   // Convert amount to words
   const amountInWords = toWords(parseFloat(formData.discount_amt || 0)).replace(/(^\w|\s\w)/g, (m) => m.toUpperCase());
+
+  const fetchCompanies = async () => {
+    try {
+      const response = await fetch(`${baseURL}/get/companies`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch companies');
+      }
+      const result = await response.json();
+      setCompanies(result);   // <-- Update your state here
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
+  const company = companies && companies.length > 0 ? companies[0] : null;
 
   return (
     <Document>
@@ -224,32 +248,43 @@ const PDFContent = ({ formData }) => {
             </View>
 
             {/* STAFF */}
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
+            {/* <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
               <Text>STAFF:</Text>
               <Text style={{ textAlign: "right", flex: 1 }}>New Friend's Jewellery</Text>
-            </View>
+            </View> */}
 
             {/* GSTIN */}
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
-              <Text>GSTIN:</Text>
-              <Text style={{ textAlign: "right", flex: 1 }}>38RQAPS4222R1ZT</Text>
-            </View>
+            {company && (
+              <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
+                <Text>GSTIN:</Text>
+                <Text style={{ textAlign: "right", flex: 1 }}>
+                  {company?.gst_no || "N/A"}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
         <View style={styles.container}>
           {/* Centered Heading */}
-          <Text style={[styles.heading, { fontFamily: 'Times-Bold' }]}>NEW FRIEND'S JEWELLERY</Text>
+          <Text style={[styles.heading, { fontFamily: 'Times-Bold' }]}>
+            {company?.company_name?.toUpperCase() || ""}
+          </Text>
 
           <View style={styles.contentContainer}>
 
-            {/* Flat No. Section */}
             <View style={styles.leftColumn}>
-              <Text style={styles.flatNo}>Flat No : SHOP NO.F2, SKITCHAN NGODUP COMPLEX </Text>
-              <Text style={styles.cin}>Road/Street: NEAR OLD BUS STAND </Text>
-              <Text style={styles.cin}>LEH, Leh Ladakh, Leh Ladakh - 194101.</Text>
-              {/* <Text style={styles.cin}>CIN : U46498KA2024PTC185784</Text> */}
+              <Text style={styles.flatNo}>
+                Flat No : {company?.address || ""}
+              </Text>
 
+              <Text style={styles.cin}>
+                Road/Street: {company?.address2 || ""}
+              </Text>
+
+              <Text style={styles.cin}>
+                {company?.city || ""}, {company?.state || ""} - {company?.pincode || ""}
+              </Text>
             </View>
 
             {/* Vertical Divider */}
@@ -258,9 +293,18 @@ const PDFContent = ({ formData }) => {
             {/* Branch Section */}
             <View style={styles.rightColumn}>
               <Text style={[styles.branch, { fontFamily: 'Times-Bold' }]}>BRANCH:</Text>
-              <Text style={styles.branchContent}>SHOP NO.F2, SKITCHAN NGODUP COMPLEX, </Text>
-              <Text style={styles.branchContent}> NEAR OLD BUS STAND,</Text>
-              <Text style={styles.branchContent}>Leh Ladakh, Leh Ladakh - 194101</Text>
+
+              <Text style={styles.branchContent}>
+                {company?.address || ""},
+              </Text>
+
+              <Text style={styles.branchContent}>
+                {company?.address2 || ""},
+              </Text>
+
+              <Text style={styles.branchContent}>
+                {company?.city || ""}, {company?.state || ""} - {company?.pincode || ""}
+              </Text>
             </View>
           </View>
 
@@ -268,7 +312,9 @@ const PDFContent = ({ formData }) => {
           <View style={styles.horizontalLine1} />
 
           <View>
-            <Text>Mob : 9928541909</Text>
+            <Text>
+              Mob : {company?.mobile?.toUpperCase() || ""}
+            </Text>
           </View>
 
           <View style={styles.boxContainer}>
