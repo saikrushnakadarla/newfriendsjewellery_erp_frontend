@@ -270,10 +270,14 @@ const TaxINVoiceReceipt = ({
                 }
         };
 
+        useEffect(() => {
+                fetchCompanies();
+        }, []);
+        const company = companies && companies.length > 0 ? companies[0] : null;
+
 
         useEffect(() => {
                 fetchProducts();
-                fetchCompanies();
         }, []);
 
         useEffect(() => {
@@ -329,8 +333,6 @@ const TaxINVoiceReceipt = ({
                 const year = date.getFullYear();
                 return `${day}-${month}-${year}`;
         };
-        const company = companies && companies.length > 0 ? companies[0] : null;
-
 
 
         return (

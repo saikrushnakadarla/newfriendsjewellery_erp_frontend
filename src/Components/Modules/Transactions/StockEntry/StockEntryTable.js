@@ -166,6 +166,18 @@ const StockEntryTable = (selectedProduct) => {
       { Header: 'MC', accessor: 'Making_Charges' },
       { Header: 'Status', accessor: 'Status' },
       {
+        Header: "Barcode",
+        Cell: ({ row }) =>
+          <a
+            href={`${baseURL}/invoices/${row.original.PCode_BarCode}.pdf`} // Fetch from backend
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'none' }}
+          >
+            📝 View
+          </a>
+      },
+      {
         Header: 'Action',
         Cell: ({ row }) => (
           <div className="d-flex align-items-center">
@@ -755,101 +767,101 @@ const StockEntryTable = (selectedProduct) => {
         <Modal.Header closeButton>
           <Modal.Title>View Product Details</Modal.Title>
         </Modal.Header>
-        <Modal.Body style={{ fontSize:'13px' }}>
+        <Modal.Body style={{ fontSize: '13px' }}>
           {selectedRow ? (
             <>
               {/* <div className='small'> */}
-                <Row >
-                  <Col md={3} style={{ whiteSpace: "nowrap" }}>
-                    <p><strong>Supplier:</strong> {selectedRow.account_name}</p>
-                  </Col>
-                  <Col md={3} style={{ whiteSpace: "nowrap" }}>
-                    <p><strong>Category:</strong> {selectedRow.category}</p>
-                  </Col>
-                  <Col md={3} style={{ whiteSpace: "nowrap" }}>
-                    <p><strong>Sub Category:</strong> {selectedRow.sub_category}</p>
-                  </Col>
-                  <Col md={3} style={{ whiteSpace: "nowrap" }}>
-                    <p><strong>Design Name:</strong> {selectedRow.design_master}</p>
-                  </Col>
-                </Row>
+              <Row >
+                <Col md={3} style={{ whiteSpace: "nowrap" }}>
+                  <p><strong>Supplier:</strong> {selectedRow.account_name}</p>
+                </Col>
+                <Col md={3} style={{ whiteSpace: "nowrap" }}>
+                  <p><strong>Category:</strong> {selectedRow.category}</p>
+                </Col>
+                <Col md={3} style={{ whiteSpace: "nowrap" }}>
+                  <p><strong>Sub Category:</strong> {selectedRow.sub_category}</p>
+                </Col>
+                <Col md={3} style={{ whiteSpace: "nowrap" }}>
+                  <p><strong>Design Name:</strong> {selectedRow.design_master}</p>
+                </Col>
+              </Row>
 
-                {/* Second Row: Pricing, Barcode, HUID No, Stock Point */}
-                <Row >
+              {/* Second Row: Pricing, Barcode, HUID No, Stock Point */}
+              <Row >
 
-                  <Col md={3}>
-                    <p><strong>Pricing:</strong> {selectedRow.Pricing}</p>
-                  </Col>
-                  <Col md={3}>
-                    <p><strong>Barcode:</strong> {selectedRow.PCode_BarCode}</p>
-                  </Col>
-                  <Col md={3}>
-                    <p><strong>HUID No:</strong> {selectedRow.HUID_No}</p>
-                  </Col>
-                  <Col md={3}>
-                    <p><strong>Stock Point:</strong> {selectedRow.Stock_Point}</p>
-                  </Col>
-                </Row>
+                <Col md={3}>
+                  <p><strong>Pricing:</strong> {selectedRow.Pricing}</p>
+                </Col>
+                <Col md={3}>
+                  <p><strong>Barcode:</strong> {selectedRow.PCode_BarCode}</p>
+                </Col>
+                <Col md={3}>
+                  <p><strong>HUID No:</strong> {selectedRow.HUID_No}</p>
+                </Col>
+                <Col md={3}>
+                  <p><strong>Stock Point:</strong> {selectedRow.Stock_Point}</p>
+                </Col>
+              </Row>
 
-                <Row>
-
-
-                  <Col md={3}>
-                    <p><strong>Gross Weight:</strong> {selectedRow.Gross_Weight}</p>
-                    <p><strong>Stone Weight:</strong> {selectedRow.Stones_Weight}</p>
-                    <p><strong>Wastage %:</strong> {selectedRow.Wastage_Percentage}</p>
-                    <p><strong>Total Weight:</strong> {selectedRow.TotalWeight_AW}</p>
-                    <p><strong>Making Charges:</strong> {selectedRow.Making_Charges}</p>
-                    <p><strong>Status:</strong> {selectedRow.Status}</p>
-                    <p><strong>Purity:</strong> {selectedRow.Purity}</p>
-                    <p><strong>Metal Type:</strong> {selectedRow.metal_type}</p>
-                  </Col>
-
-                  <Col md={3}>
-                    {/* <p><strong>Prefix:</strong> {selectedRow.Prefix}</p> */}
-                    <p><strong>Wastage On:</strong> {selectedRow.Wastage_On}</p>
-                    <p><strong>Wastage Weight:</strong> {selectedRow.WastageWeight}</p>
-                    <p><strong>MC Per Gram:</strong> {selectedRow.MC_Per_Gram}</p>
-                    <p><strong>Making Charges On:</strong> {selectedRow.Making_Charges_On}</p>
-                    {/* <p><strong>Source:</strong> {selectedRow.Source}</p> */}
-                    {/* <p><strong>QR Status:</strong> {selectedRow.qr_status}</p> */}
-                    {/* <p><strong>Added At:</strong> {new Date(selectedRow.added_at).toLocaleString()}</p> */}
-                    <p><strong>Deduct Stone Wt:</strong> {selectedRow.deduct_st_Wt}</p>
-                    <p><strong>Size:</strong> {selectedRow.size}</p>
-                    <p><strong>Tag ID:</strong> {selectedRow.tag_id}</p>
-                    <p><strong>Tag Weight:</strong> {selectedRow.tag_weight}</p>
-                  </Col>
-
-                  <Col md={3}>
-                    <p><strong>Pur. Gross Weight:</strong> {selectedRow.pur_Gross_Weight}</p>
-                    <p><strong>Pur. Stone Weight:</strong> {selectedRow.pur_Stones_Weight}</p>
-                    <p><strong>Pur. Deduct Stone Wt:</strong> {selectedRow.pur_deduct_st_Wt}</p>
-                    <p><strong>Pur. Stones Price:</strong> {selectedRow.pur_Stones_Price}</p>
-                    <p><strong>Pur. Weight BW:</strong> {selectedRow.pur_Weight_BW}</p>
-                    <p><strong>Pur. Wastage On:</strong> {selectedRow.pur_Wastage_On}</p>
-                    <p><strong>Pur. Wastage %:</strong> {selectedRow.pur_Wastage_Percentage}</p>
-                    <p><strong>Pur. Wastage Weight:</strong> {selectedRow.pur_WastageWeight}</p>
-                    <p><strong>Pur. Total Weight:</strong> {selectedRow.pur_TotalWeight_AW}</p>
+              <Row>
 
 
+                <Col md={3}>
+                  <p><strong>Gross Weight:</strong> {selectedRow.Gross_Weight}</p>
+                  <p><strong>Stone Weight:</strong> {selectedRow.Stones_Weight}</p>
+                  <p><strong>Wastage %:</strong> {selectedRow.Wastage_Percentage}</p>
+                  <p><strong>Total Weight:</strong> {selectedRow.TotalWeight_AW}</p>
+                  <p><strong>Making Charges:</strong> {selectedRow.Making_Charges}</p>
+                  <p><strong>Status:</strong> {selectedRow.Status}</p>
+                  <p><strong>Purity:</strong> {selectedRow.Purity}</p>
+                  <p><strong>Metal Type:</strong> {selectedRow.metal_type}</p>
+                </Col>
 
-                  </Col>
+                <Col md={3}>
+                  {/* <p><strong>Prefix:</strong> {selectedRow.Prefix}</p> */}
+                  <p><strong>Wastage On:</strong> {selectedRow.Wastage_On}</p>
+                  <p><strong>Wastage Weight:</strong> {selectedRow.WastageWeight}</p>
+                  <p><strong>MC Per Gram:</strong> {selectedRow.MC_Per_Gram}</p>
+                  <p><strong>Making Charges On:</strong> {selectedRow.Making_Charges_On}</p>
+                  {/* <p><strong>Source:</strong> {selectedRow.Source}</p> */}
+                  {/* <p><strong>QR Status:</strong> {selectedRow.qr_status}</p> */}
+                  {/* <p><strong>Added At:</strong> {new Date(selectedRow.added_at).toLocaleString()}</p> */}
+                  <p><strong>Deduct Stone Wt:</strong> {selectedRow.deduct_st_Wt}</p>
+                  <p><strong>Size:</strong> {selectedRow.size}</p>
+                  <p><strong>Tag ID:</strong> {selectedRow.tag_id}</p>
+                  <p><strong>Tag Weight:</strong> {selectedRow.tag_weight}</p>
+                </Col>
 
-                  <Col md={3}>
-                    <p><strong>Pur. MC / Gram:</strong> {selectedRow.pur_MC_Per_Gram}</p>
-                    <p><strong>Pur. MC Charges:</strong> {selectedRow.pur_Making_Charges}</p>
-                    {/* <p><strong>Invoice:</strong> {selectedRow.invoice}</p> */}
-                    <p><strong>Stone Price / Carat:</strong> {selectedRow.stone_price_per_carat}</p>
-                    {/* <p><strong>Product ID:</strong> {selectedRow.product_id}</p>
+                <Col md={3}>
+                  <p><strong>Pur. Gross Weight:</strong> {selectedRow.pur_Gross_Weight}</p>
+                  <p><strong>Pur. Stone Weight:</strong> {selectedRow.pur_Stones_Weight}</p>
+                  <p><strong>Pur. Deduct Stone Wt:</strong> {selectedRow.pur_deduct_st_Wt}</p>
+                  <p><strong>Pur. Stones Price:</strong> {selectedRow.pur_Stones_Price}</p>
+                  <p><strong>Pur. Weight BW:</strong> {selectedRow.pur_Weight_BW}</p>
+                  <p><strong>Pur. Wastage On:</strong> {selectedRow.pur_Wastage_On}</p>
+                  <p><strong>Pur. Wastage %:</strong> {selectedRow.pur_Wastage_Percentage}</p>
+                  <p><strong>Pur. Wastage Weight:</strong> {selectedRow.pur_WastageWeight}</p>
+                  <p><strong>Pur. Total Weight:</strong> {selectedRow.pur_TotalWeight_AW}</p>
+
+
+
+                </Col>
+
+                <Col md={3}>
+                  <p><strong>Pur. MC / Gram:</strong> {selectedRow.pur_MC_Per_Gram}</p>
+                  <p><strong>Pur. MC Charges:</strong> {selectedRow.pur_Making_Charges}</p>
+                  {/* <p><strong>Invoice:</strong> {selectedRow.invoice}</p> */}
+                  <p><strong>Stone Price / Carat:</strong> {selectedRow.stone_price_per_carat}</p>
+                  {/* <p><strong>Product ID:</strong> {selectedRow.product_id}</p>
               <p><strong>Subcategory ID:</strong> {selectedRow.subcategory_id}</p> */}
-                    <p><strong>Pcs:</strong> {selectedRow.pcs}</p>
-                    <p><strong>Piece Cost:</strong> {selectedRow.pieace_cost}</p>
-                    <p><strong>Selling Price:</strong> {selectedRow.selling_price}</p>
-                    <p><strong>Tax %:</strong> {selectedRow.tax_percent}</p>
-                    <p><strong>MRP Price:</strong> {selectedRow.mrp_price}</p>
-                    <p><strong>Total Pcs Cost:</strong> {selectedRow.total_pcs_cost}</p>
-                  </Col>
-                </Row>
+                  <p><strong>Pcs:</strong> {selectedRow.pcs}</p>
+                  <p><strong>Piece Cost:</strong> {selectedRow.pieace_cost}</p>
+                  <p><strong>Selling Price:</strong> {selectedRow.selling_price}</p>
+                  <p><strong>Tax %:</strong> {selectedRow.tax_percent}</p>
+                  <p><strong>MRP Price:</strong> {selectedRow.mrp_price}</p>
+                  <p><strong>Total Pcs Cost:</strong> {selectedRow.total_pcs_cost}</p>
+                </Col>
+              </Row>
               {/* </div> */}
             </>
           ) : (

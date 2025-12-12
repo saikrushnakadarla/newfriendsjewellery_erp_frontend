@@ -423,7 +423,7 @@ useEffect(() => {
         <PDFContent formData={formData} repairDetails={repairDetails} />
       ).toBlob();
 
-      saveAs(pdfBlob, `${formData.receipt_no}.pdf`);
+      // saveAs(pdfBlob, `${formData.receipt_no}.pdf`);
       await handleSavePDFToServer(pdfBlob, formData.receipt_no);
 
       // Create download link and trigger download
