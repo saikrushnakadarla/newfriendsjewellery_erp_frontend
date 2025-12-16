@@ -188,14 +188,14 @@ function CompanyInfo() {
               <Col md={2}><InputField label="Email" name="email" value={formData.email} onChange={handleChange} /></Col>
               <Col md={2}><InputField label="Mobile" name="mobile" value={formData.mobile} onChange={handleChange} /></Col>
               <Col md={2}><InputField label="Phone" name="phone" value={formData.phone} onChange={handleChange} /></Col>
-              <Col md={3}><InputField label="Website" name="website" value={formData.website} onChange={handleChange} /></Col>
-              <Col md={3}><InputField label="GST No" name="gst_no" value={formData.gst_no} onChange={handleChange} /></Col>
-              <Col md={2}><InputField label="PAN No" name="pan_no" value={formData.pan_no} onChange={handleChange} /></Col>
-              <Col md={2}><InputField label="Bank Name" name="bank_name" value={formData.bank_name} onChange={handleChange} /></Col>
+              <Col md={2}><InputField label="GST No" name="gst_no" value={formData.gst_no} onChange={handleChange} /></Col>
+              <Col md={2}><InputField label="Account No" name="bank_account_no" value={formData.bank_account_no} onChange={handleChange} /></Col>
+              <Col md={2}><InputField label="Account Name" name="bank_name" value={formData.bank_name} onChange={handleChange} /></Col>
+              <Col md={2}><InputField label="IFSC Code" name="ifsc_code" value={formData.ifsc_code} onChange={handleChange} /></Col>
               <Col md={2}><InputField label="Branch" name="branch" value={formData.branch} onChange={handleChange} /></Col>
               <Col md={2}><InputField label="Bank URL" name="bank_url" value={formData.bank_url} onChange={handleChange} /></Col>
-              <Col md={2}><InputField label="Account No" name="bank_account_no" value={formData.bank_account_no} onChange={handleChange} /></Col>
-              <Col md={2}><InputField label="IFSC Code" name="ifsc_code" value={formData.ifsc_code} onChange={handleChange} /></Col>
+              <Col md={2}><InputField label="PAN No" name="pan_no" value={formData.pan_no} onChange={handleChange} /></Col>
+              <Col md={3}><InputField label="Website" name="website" value={formData.website} onChange={handleChange} /></Col>
             </Row>
             <div style={{ marginTop: "20px" }}>
               <button type="submit" className="cus-submit-btn">{editMode ? "Update" : "Save"}</button>
@@ -231,12 +231,12 @@ function CompanyInfo() {
               }}
             >
               {[["Company Name", item.company_name], ["Address", item.address], ["Address 2", item.address2],
-                ["City", item.city], ["Pincode", item.pincode], ["State", item.state],
-                ["State Code", item.state_code], ["Country", item.country], ["Email", item.email],
-                ["Mobile", item.mobile], ["Phone", item.phone], ["Website", item.website],
-                ["GST No", item.gst_no], ["PAN No", item.pan_no], ["Bank Name", item.bank_name],
-                ["Branch", item.branch], ["Bank URL", item.bank_url], ["Account No", item.bank_account_no],
-                ["IFSC Code", item.ifsc_code]
+              ["City", item.city], ["Pincode", item.pincode], ["State", item.state],
+              ["State Code", item.state_code], ["Country", item.country], ["Email", item.email],
+              ["Mobile", item.mobile], ["Phone", item.phone], ["Website", item.website],
+              ["GST No", item.gst_no], ["PAN No", item.pan_no], ["Bank Name", item.bank_name],
+              ["Branch", item.branch], ["Bank URL", item.bank_url], ["Account No", item.bank_account_no],
+              ["IFSC Code", item.ifsc_code]
               ].reduce((rows, field, index) => {
                 if (index % 3 === 0) rows.push([]);
                 rows[rows.length - 1].push(field);

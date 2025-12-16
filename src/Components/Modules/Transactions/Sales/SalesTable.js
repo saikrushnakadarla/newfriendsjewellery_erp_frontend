@@ -210,10 +210,10 @@ const RepairsTable = () => {
                     cursor: 'pointer',
                     marginLeft: '10px',
                     color: 'blue',
-                    color: isToday ? 'blue' : 'gray',
+                    // color: isToday ? 'blue' : 'gray',
                   }}
                   onClick={() => {
-                    if (isToday) {
+                    // if (isToday) {
                       handleEdit(
                         row.original.invoice_number,
                         row.original.mobile,
@@ -222,7 +222,7 @@ const RepairsTable = () => {
                         row.original.chq_amt,
                         row.original.online_amt
                       );
-                    }
+                    // }
                   }}
                 />
               )}
@@ -262,19 +262,19 @@ const RepairsTable = () => {
               /> */}
               {/* Delete icon (only for ADMIN) */}
               {/* {isAdmin && ( */}
-                <FaTrash
-                  style={{
-                    cursor: 'pointer',
-                    marginLeft: '10px',
-                    color: 'red',
-                    color: 'red',
-                  }}
-                  onClick={() => {
-                    // if (isToday) {
-                      handleDelete(row.original.invoice_number);
-                    // }
-                  }}
-                />
+              <FaTrash
+                style={{
+                  cursor: 'pointer',
+                  marginLeft: '10px',
+                  color: 'red',
+                  color: 'red',
+                }}
+                onClick={() => {
+                  // if (isToday) {
+                  handleDelete(row.original.invoice_number);
+                  // }
+                }}
+              />
               {/* )} */}
             </div>
           );
@@ -401,10 +401,10 @@ const RepairsTable = () => {
           state: {
             invoice_number,
             mobile,
-            cash_amount,
-            card_amt,
-            chq_amt,
-            online_amt,
+            cash_amount: paymentDetails.cash_amount, // Use the parsed values
+            card_amt: paymentDetails.card_amt,
+            chq_amt: paymentDetails.chq_amt,
+            online_amt: paymentDetails.online_amt,
             repairDetails: updatedRepairDetails, // Ensure the repair details are passed
           },
         });

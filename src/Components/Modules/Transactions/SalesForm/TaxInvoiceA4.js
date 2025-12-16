@@ -5,6 +5,7 @@ import logo1 from '../../../../Components/Pages/Images/newfriends_logo.jpg'
 import { toWords } from "number-to-words";
 import QRCode from "qrcode";
 import baseURL from '../../../../Url/NodeBaseURL';
+import axios from "axios";
 
 const styles = StyleSheet.create({
         page: {
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
         },
         boxContainer: {
                 width: '100%',
-                height: 330,
+                height: '100%',
                 marginTop: 5,
                 border: '1px solid black',
                 marginBottom: 20,
@@ -233,52 +234,55 @@ const TaxINVoiceReceipt = ({
         salesTaxableAmount,
         netAmount,
         netPayableAmount,
+        product,
+        company
 }) => {
         const [qrCodeUrl, setQrCodeUrl] = useState("");
-        const [loading, setLoading] = useState(true); // State for loading
-        const [error, setError] = useState(null); // State for error handling
-        const [data, setData] = useState([]); // State to store table data
-        const [companies, setCompanies] = useState([]);
-
-        const fetchProducts = async () => {
-                try {
-                        const response = await fetch(`${baseURL}/get/products`);
-                        if (!response.ok) {
-                                throw new Error('Failed to fetch products');
-                        }
-                        const result = await response.json();
-                        setData(result);
-                } catch (error) {
-                        setError(error.message);
-                } finally {
-                        setLoading(false);
-                }
-        };
-
-        const fetchCompanies = async () => {
-                try {
-                        const response = await fetch(`${baseURL}/get/companies`);
-                        if (!response.ok) {
-                                throw new Error('Failed to fetch companies');
-                        }
-                        const result = await response.json();
-                        setCompanies(result);   // <-- Update your state here
-                } catch (error) {
-                        setError(error.message);
-                } finally {
-                        setLoading(false);
-                }
-        };
-
-        useEffect(() => {
-                fetchCompanies();
-        }, []);
-        const company = companies && companies.length > 0 ? companies[0] : null;
+        // const [data, setData] = useState([]); 
+        // const [company, setCompany] = useState(null);
 
 
-        useEffect(() => {
-                fetchProducts();
-        }, []);
+        // const fetchProducts = async () => {
+        //         try {
+        //                 const response = await fetch(`${baseURL}/get/products`);
+        //                 if (!response.ok) {
+        //                         throw new Error('Failed to fetch products');
+        //                 }
+        //                 const result = await response.json();
+        //                 setData(result);
+        //         } catch (error) {
+        //                 setError(error.message);
+        //         } finally {
+        //                 setLoading(false);
+        //         }
+        // };
+
+        // const fetchCompanies = async () => {
+        //         try {
+        //                 const response = await axios.get(`${baseURL}/get/companies`);
+
+        //                 const firstCompany = response.data?.[0] || null;
+
+        //                 // API returns array with one object
+        //                 setCompany(firstCompany);
+        //                 console.log("firstCompany=", firstCompany)
+
+        //         } catch (error) {
+        //                 setError(error.message);
+        //         } finally {
+        //                 setLoading(false);
+        //         }
+        // };
+
+
+
+        // useEffect(() => {
+        //         fetchCompanies();
+        // }, []);
+
+        // useEffect(() => {
+        //         fetchProducts();
+        // }, []);
 
         useEffect(() => {
                 const generateQRCode = async () => {
@@ -347,12 +351,13 @@ const TaxINVoiceReceipt = ({
                                                 <Text style={{ marginBottom: 5 }}>MOBILE: {formData.mobile}</Text>
                                                 <Text style={{ marginBottom: 5 }}>PAN NO: {formData.pan_card}</Text>
                                         </View>
+                                        <View style={[styles.column, { width: "5%" }]}></View>
 
                                         <View style={[styles.column, { width: "40%" }]}>
                                                 <Image style={styles.image1} src={logo1} />
                                         </View>
 
-                                        <View style={[styles.column, { width: "10%" }]}></View>
+                                        <View style={[styles.column, { width: "5%" }]}></View>
 
                                         <View style={[styles.column, { marginTop: 0, width: "20%", marginLeft: 20, fontFamily: "Times-Bold" }]}>
                                                 <Text style={{ fontWeight: "bold", fontSize: 12, marginBottom: 10, marginLeft: 20 }}>TAX INVOICE</Text>
@@ -381,14 +386,15 @@ const TaxINVoiceReceipt = ({
                                                 {/* STAFF */}
 
                                                 {/* GSTIN */}
-                                                {company && (
-                                                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
-                                                                <Text>GSTIN:</Text>
-                                                                <Text style={{ textAlign: "right", flex: 1 }}>
-                                                                        {company?.gst_no || "N/A"}
-                                                                </Text>
-                                                        </View>
-                                                )}
+                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
+                                                        <Text>GSTIN:</Text>
+                                                        <Text style={{ textAlign: "right", flex: 1 }}>
+                                                                {company?.gst_no?.trim() ? company.gst_no : ""}
+                                                        </Text>
+                                                </View>
+
+
+
 
                                         </View>
                                 </View>
@@ -502,7 +508,7 @@ const TaxINVoiceReceipt = ({
 
                                                         {/* Add rows of data below */}
                                                         {repairDetails.map((item, index) => {
-                                                                const matchedProduct = data.find(product => product.product_name === item.category);
+                                                                const matchedProduct = product.find(product => product.product_name === item.category);
 
                                                                 return (
                                                                         <View style={[styles.tableRow, { fontFamily: 'Times-Roman' }]} key={index}>
@@ -514,7 +520,7 @@ const TaxINVoiceReceipt = ({
                                                                                 </Text>
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
-                                                                                <Text style={[styles.tableCell, styles.tableCellHSN]}>{matchedProduct?.hsn_code || "N/A"}</Text>
+                                                                                <Text style={[styles.tableCell, styles.tableCellHSN]}>{matchedProduct?.hsn_code || "7113"}</Text>
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
                                                                                 <Text style={[styles.tableCell, styles.tableCellQty]}>
@@ -522,16 +528,15 @@ const TaxINVoiceReceipt = ({
                                                                                 </Text>
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
-                                                                                {/* <Text style={[styles.tableCell, styles.tableCellPurity]}>
+                                                                                <Text style={[styles.tableCell, styles.tableCellPurity]}>
                                                                                         {(() => {
-                                                                                                const category = item.category?.toLowerCase();
-                                                                                                if (category === "gold jewellery") return "91.6 HM";
-                                                                                                if (category === "silver articles") return "92.5 Sterling";
-                                                                                                if (category === "silver jewellery") return "80 HM";
-                                                                                                if (category === "diamond jewellery") return "91.6 HM";
+                                                                                                const category = item.metal_type?.toLowerCase();
+                                                                                                if (category === "gold") return "22C";
+                                                                                                if (category === "silver") return "22C";
+                                                                                                if (category === "diamond") return "22C";
                                                                                                 return "";
                                                                                         })()}
-                                                                                </Text> */}
+                                                                                </Text>
                                                                                 {/* <Text style={[styles.tableCell, styles.tableCellPurity]}>
                                                                                         {(() => {
                                                                                                 if (item.pricing === "By fixed") {
@@ -546,9 +551,9 @@ const TaxINVoiceReceipt = ({
                                                                                                 return "";
                                                                                         })()}
                                                                                 </Text> */}
-                                                                                <Text style={[styles.tableCell, styles.tableCellPurity]}>
+                                                                                {/* <Text style={[styles.tableCell, styles.tableCellPurity]}>
                                                                                         {item.printing_purity || "0.00"}
-                                                                                </Text>
+                                                                                </Text> */}
 
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
@@ -654,10 +659,11 @@ const TaxINVoiceReceipt = ({
                                                                 <Text style={[styles.bold, { marginBottom: 3 }]}>
                                                                         Cheque Recd: {Number(chq_amt || 0).toFixed(2)}
                                                                 </Text>
-                                                                <Text style={[styles.bold]}>
+                                                                <Text style={[styles.bold, { marginBottom: 3 }]}>
                                                                         NEFT Recd: {Number(online_amt || 0).toFixed(2)} #: Bank:
                                                                 </Text>
-                                                                <Text style={[styles.bold]}>
+
+                                                                <Text style={[styles.bold, { marginBottom: 3 }]}>
                                                                         Balance Amount:{" "}
                                                                         {(
                                                                                 Math.round(Number(netPayableAmount || 0)) -
@@ -666,6 +672,12 @@ const TaxINVoiceReceipt = ({
                                                                                         Number(card_amt || 0) +
                                                                                         Number(online_amt || 0))
                                                                         ).toFixed(2)}
+                                                                </Text>
+                                                                <Text style={[styles.bold, { marginBottom: 3 }]}>
+                                                                        Bank A/C No : {company?.bank_account_no || ""}
+                                                                </Text>
+                                                                <Text style={[styles.bold, { marginBottom: 3 }]}>
+                                                                        Bank A/C Name : {company?.bank_name || ""}
                                                                 </Text>
 
                                                                 <Text style={{ fontWeight: 'bold', fontSize: '15px', color: 'green', marginLeft: '190px', marginTop: '15px' }}>
@@ -735,7 +747,7 @@ const TaxINVoiceReceipt = ({
 
 
                                                 </View>
-                                                <View style={{ alignItems: "center", fontFamily: 'Times-Bold' }}>
+                                                <View style={{ alignItems: "center", fontFamily: 'Times-Bold',  marginTop: 10 }}>
                                                         <Text>
                                                                 (Rupees {netBillValueInWords} Only)
                                                         </Text>
@@ -749,14 +761,26 @@ const TaxINVoiceReceipt = ({
 
                                                         {/* Right Side */}
                                                         <View style={{ alignItems: "flex-end", paddingRight: 10 }}>
-                                                                <Text style={[styles.bold]}>For NEW FRIEND'S JEWELLERY</Text>
+                                                                <Text style={[styles.bold]}>For {company?.company_name?.toUpperCase() || ""}</Text>
                                                         </View>
 
                                                 </View>
 
-                                                <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
-                                                        {qrCodeUrl && <Image style={styles.qrCode} src={qrCodeUrl} />}
+                                                <View
+                                                        style={{
+                                                                flexDirection: "row",
+                                                                justifyContent: "center", // horizontal center
+                                                                alignItems: "center",     // vertical center
+                                                        }}
+                                                >
+                                                        {qrCodeUrl && (
+                                                                <Image
+                                                                        source={{ uri: qrCodeUrl }}   // ✅ React Native uses source, not src
+                                                                        style={styles.qrCode}
+                                                                />
+                                                        )}
                                                 </View>
+
 
 
 

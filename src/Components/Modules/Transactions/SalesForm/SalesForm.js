@@ -1756,10 +1756,10 @@ const SalesForm = () => {
 
 
   const [paymentDetails, setPaymentDetails] = useState({
-    cash_amount: "", // Fix to two decimal places
-    card_amt: "",
-    chq_amt: "",
-    online_amt: "",
+    cash_amount: location.state?.cash_amount || "",
+    card_amt: location.state?.card_amt || "",
+    chq_amt: location.state?.chq_amt || "",
+    online_amt: location.state?.online_amt || "",
   });
 
 
@@ -1801,6 +1801,45 @@ const SalesForm = () => {
     localStorage.removeItem(`saleFormData_${tabId}`);
     console.log("Data cleared successfully");
   };
+
+
+  const [product, setProduct] = useState([]); // State to store table data
+  const [company, setCompany] = useState(null);
+  const [error, setError] = useState(null);
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(`${baseURL}/get/products`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      const result = await response.json();
+      setProduct(result);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCompanies = async () => {
+    try {
+      const response = await axios.get(`${baseURL}/get/companies`);
+      const firstCompany = response.data?.[0] || null;
+      // API returns array with one object
+      setCompany(firstCompany);
+      console.log("firstCompany=", firstCompany);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCompanies();
+  }, []);
 
   const handleSave = async () => {
     if (!formData.account_name || !formData.mobile) {
@@ -1898,6 +1937,8 @@ const SalesForm = () => {
           salesTaxableAmount={salesTaxableAmount}
           netAmount={netAmount}
           netPayableAmount={netPayableAmount}
+          company={company}
+          product={product}
         />
       );
 
@@ -1933,7 +1974,7 @@ const SalesForm = () => {
       // Cleanup
       clearData();
       resetForm();
-      // navigate("/salestable");
+      navigate("/salestable");
       window.location.reload();
       await handleCheckout();
 

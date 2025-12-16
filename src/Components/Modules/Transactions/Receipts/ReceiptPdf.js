@@ -161,6 +161,7 @@ const PDFContent = ({ formData }) => {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true); // State for loading
   const [error, setError] = useState(null);
+  const [company, setCompany] = useState(null);
 
   useEffect(() => {
     const generateQRCode = async () => {
@@ -196,8 +197,12 @@ const PDFContent = ({ formData }) => {
       if (!response.ok) {
         throw new Error('Failed to fetch companies');
       }
+
       const result = await response.json();
-      setCompanies(result);   // <-- Update your state here
+
+      // API returns array with one object
+      setCompany(result[0] || null);
+
     } catch (error) {
       setError(error.message);
     } finally {
@@ -205,10 +210,10 @@ const PDFContent = ({ formData }) => {
     }
   };
 
+
   useEffect(() => {
     fetchCompanies();
   }, []);
-  const company = companies && companies.length > 0 ? companies[0] : null;
 
   return (
     <Document>
