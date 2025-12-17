@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DataTable from '../../../Pages/InputField/TableLayout'; // Import your reusable DataTable component
+import DataTable from '../../../Pages/InputField/DataTable'; // Import your reusable DataTable component
 import { FaEdit, FaTrash, FaEye } from 'react-icons/fa';
 import { Button, Row, Col } from 'react-bootstrap';
 import InputField from '../../../Modules/Masters/ItemMaster/Inputfield'; // Assuming you have this reusable input field component
@@ -9,6 +9,8 @@ import StoneDetailsModal from "./StoneDetailsModal";
 import baseURL from "../../../../Url/NodeBaseURL";
 import axios from 'axios';
 import Modal from 'react-bootstrap/Modal';
+import { jsPDF } from "jspdf";
+import QRCode from "qrcode";
 
 const StockEntryTable = (selectedProduct) => {
   const navigate = useNavigate();
@@ -21,6 +23,68 @@ const StockEntryTable = (selectedProduct) => {
   const [purityOptions, setPurityOptions] = useState([]);
   const [selectedRow, setSelectedRow] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [rates, setRates] = useState({
+    rate_24crt: "",
+    rate_22crt: "",
+    rate_18crt: "",
+    rate_16crt: ""
+  });
+
+
+  useEffect(() => {
+    const fetchCurrentRates = async () => {
+      try {
+        const response = await axios.get(`${baseURL}/get/current-rates`);
+        const newRates = {
+          rate_24crt: response.data.rate_24crt || "",
+          rate_22crt: response.data.rate_22crt || "",
+          rate_18crt: response.data.rate_18crt || "",
+          rate_16crt: response.data.rate_16crt || "",
+          silver_rate: response.data.silver_rate || "",
+        };
+        setRates(newRates);
+
+        // Update form data based on metal type
+        const metalType = formData.metal_type?.toLowerCase();
+
+        setFormData((prev) => ({
+          ...prev,
+          rate_24k: metalType === "silver" ? newRates.silver_rate : newRates.rate_24crt,
+        }));
+      } catch (error) {
+        console.error('Error fetching current rates:', error);
+      }
+    };
+
+    fetchCurrentRates();
+  }, [formData.metal_type]);
+
+  useEffect(() => {
+    if (!formData.Purity) {
+      setFormData((prev) => ({
+        ...prev,
+        rate: formData.rate,
+      }));
+      return;
+    }
+
+    const purityValue = parseFloat(formData.Purity);
+    const baseRate = parseFloat(formData.rate_24k); // 24K base rate
+
+    if (!isNaN(purityValue) && !isNaN(baseRate)) {
+      const calculatedRate = ((purityValue / 100) * baseRate).toFixed(2);
+
+      setFormData((prev) => ({
+        ...prev,
+        rate: calculatedRate,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        rate: formData.rate,
+      }));
+    }
+  }, [formData.Purity, formData.rate_24k]);
 
 
   useEffect(() => {
@@ -93,23 +157,116 @@ const StockEntryTable = (selectedProduct) => {
     const totalWeight = parseFloat(formData.TotalWeight_AW) || 0;
     const mcPerGram = parseFloat(formData.MC_Per_Gram) || 0;
     const makingCharges = parseFloat(formData.Making_Charges) || 0;
+    const rate = parseFloat(formData.rate) || 0;
+
+    const purTotalWeight = parseFloat(formData.pur_TotalWeight_AW) || 0;
+    const purMcPerGram = parseFloat(formData.pur_MC_Per_Gram) || 0;
+    const purMakingCharges = parseFloat(formData.pur_Making_Charges) || 0;
+    const purRate = parseFloat(formData.pur_rate_cut) || 0;
+
+    /* ======================
+       SELLING MAKING CHARGES
+    ====================== */
 
     if (formData.Making_Charges_On === "MC / Gram") {
-      // Calculate Making Charges based on MC/Gram
       const calculatedMakingCharges = totalWeight * mcPerGram;
+
       setFormData((prev) => ({
         ...prev,
-        Making_Charges: calculatedMakingCharges.toFixed(2), // Automatically set Making Charges
+        Making_Charges: calculatedMakingCharges.toFixed(2),
       }));
+
     } else if (formData.Making_Charges_On === "MC / Piece") {
-      // Calculate MC/Gram based on fixed Making Charges
-      const calculatedMcPerGram = totalWeight ? makingCharges / totalWeight : 0;
+      const calculatedMcPerGram = totalWeight
+        ? makingCharges / totalWeight
+        : 0;
+
       setFormData((prev) => ({
         ...prev,
-        MC_Per_Gram: calculatedMcPerGram.toFixed(2), // Automatically set MC/Gram
+        MC_Per_Gram: calculatedMcPerGram.toFixed(2),
+      }));
+
+    } else if (formData.Making_Charges_On === "MC %") {
+      // rateAmount = rate × total weight
+      const rateAmount = rate * totalWeight;
+
+      const calculatedMakingCharges =
+        (mcPerGram * rateAmount) / 100;
+
+      setFormData((prev) => ({
+        ...prev,
+        Making_Charges: calculatedMakingCharges.toFixed(2),
+      }));
+    }
+
+    /* ======================
+       PURCHASE MAKING CHARGES
+    ====================== */
+
+    if (formData.pur_Making_Charges_On === "MC / Gram") {
+      const calculatedMakingCharges =
+        purTotalWeight * purMcPerGram;
+
+      setFormData((prev) => ({
+        ...prev,
+        pur_Making_Charges: calculatedMakingCharges.toFixed(2),
+      }));
+
+    } else if (formData.pur_Making_Charges_On === "MC / Piece") {
+      const calculatedMcPerGram = purTotalWeight
+        ? purMakingCharges / purTotalWeight
+        : 0;
+
+      setFormData((prev) => ({
+        ...prev,
+        pur_MC_Per_Gram: calculatedMcPerGram.toFixed(2),
+      }));
+
+    } else if (formData.pur_Making_Charges_On === "MC %") {
+      const rateAmount = purRate * purTotalWeight;
+
+      const calculatedMakingCharges =
+        (purMcPerGram * rateAmount) / 100;
+
+      setFormData((prev) => ({
+        ...prev,
+        pur_Making_Charges: calculatedMakingCharges.toFixed(2),
       }));
     }
   };
+
+  useEffect(() => {
+    const rate = parseFloat(formData.rate) || 0;
+    const weight = parseFloat(formData.TotalWeight_AW) || 0;
+    const stonesPrice = parseFloat(formData.Stones_Price) || 0;
+    const makingCharges = parseFloat(formData.Making_Charges) || 0;
+
+    // Step 1: Base amount
+    const baseAmount =
+      rate * weight + stonesPrice + makingCharges;
+
+    // Step 2: Extract tax percentage from string like "03% GST"
+    const taxPercent = parseFloat(formData.tax) || 0;
+
+
+    // Step 3: Calculate tax amount
+    const taxAmt = (baseAmount * taxPercent) / 100;
+
+    // Step 4: Final total
+    const totalPrice = baseAmount + taxAmt;
+
+    setFormData((prev) => ({
+      ...prev,
+      tax_amt: taxAmt.toFixed(2),
+      total_price: totalPrice.toFixed(2),
+    }));
+  }, [
+    formData.rate,
+    formData.TotalWeight_AW,
+    formData.Stones_Price,
+    formData.Making_Charges,
+    formData.tax,
+  ]);
 
   useEffect(() => {
     handleMakingChargesCalculation();
@@ -122,21 +279,31 @@ const StockEntryTable = (selectedProduct) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // 🔹 Exclude rate_24k before sending
+    const payload = { ...formData };
+    delete payload.rate_24k; // Remove rate_24k
+
     fetch(`${baseURL}/update/opening-tags-entry/${formData.opentag_id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData),
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload), // send payload without rate_24k
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error('Failed to update the record');
+          throw new Error("Failed to update the record");
         }
         return response.json();
       })
       .then(() => {
-        alert('Stock updated successfully');
-        setIsEditMode(false); // Hide the form
-        // Refresh the table data
+        alert("Stock updated successfully");
+
+        // 🔹 Generate & Download PDF AFTER update
+        generateAndDownloadPDF(formData);
+
+        setIsEditMode(false);
+
+        // 🔹 Refresh table data
         setData((prevData) =>
           prevData.map((item) =>
             item.opentag_id === formData.opentag_id ? formData : item
@@ -144,26 +311,114 @@ const StockEntryTable = (selectedProduct) => {
         );
       })
       .catch((error) => {
-        console.error('Error updating record:', error);
+        console.error("Error updating record:", error);
       });
   };
+
+
+
+
+  const generateAndDownloadPDF = async (data) => {
+    const doc = new jsPDF();
+    let qrContent = "";
+
+    /* ---------- QR CONTENT ---------- */
+    if (data.Pricing === "By Weight") {
+      qrContent = `
+  Tag: ${data.PCode_BarCode}
+  Purity: ${data.printing_purity}
+  Net Wt: ${data.TotalWeight_AW}
+  MRP: ${data.total_price}
+  `;
+    } else if (data.Pricing === "By fixed") {
+      qrContent = `
+  PCode: ${data.PCode_BarCode}
+  MRP: ${data.total_price}
+  `;
+    }
+
+    try {
+      const qrImageData = await QRCode.toDataURL(qrContent);
+
+      /* ---------- HEADER ---------- */
+      doc.setFontSize(10);
+      doc.text("Product QR Code", 10, 10);
+
+      /* ---------- QR ---------- */
+      doc.addImage(qrImageData, "PNG", 10, 15, 30, 30);
+
+      /* ---------- TEXT ---------- */
+      doc.setFontSize(8);
+      doc.text(`Tag: ${data.PCode_BarCode}`, 50, 20);
+
+      if (data.Pricing === "By Weight") {
+        doc.text(`Purity: ${data.printing_purity}`, 50, 25);
+        doc.text(`Net Wt: ${data.TotalWeight_AW}`, 50, 30);
+        doc.text(`MRP: ${data.total_price}`, 50, 35);
+      } else if (data.Pricing === "By fixed") {
+        doc.text(`MRP: ${data.total_price}`, 50, 25);
+      }
+
+      /* ---------- SAVE ---------- */
+      const pdfBlob = doc.output("blob");
+      await handleSavePDFToServer(pdfBlob, data.PCode_BarCode);
+
+      doc.save(`Tag_${data.PCode_BarCode}.pdf`);
+    } catch (error) {
+      console.error("Error generating QR Code PDF:", error);
+    }
+  };
+
+  const handleSavePDFToServer = async (pdfBlob, pcode) => {
+    const formData = new FormData();
+    formData.append("invoice", pdfBlob, `${pcode}.pdf`);
+
+    try {
+      const response = await fetch(`${baseURL}/upload-invoice`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload invoice");
+      }
+
+      console.log(`Tag PDF ${pcode} saved on server`);
+    } catch (error) {
+      console.error("Error uploading tag PDF:", error);
+    }
+  };
+
 
   const columns = React.useMemo(
     () => [
       {
-        Header: 'Sr. No.',
+        Header: 'S No.',
         Cell: ({ row }) => row.index + 1, // Generate a sequential number based on the row index
       },
-      // { Header: 'OpenTag ID', accessor: 'opentag_id' },
+      {
+        Header: 'Date',
+        accessor: 'date',
+        Cell: ({ value }) => {
+          if (!value) return "";
+          const date = new Date(value);
+          const day = String(date.getDate()).padStart(2, "0");
+          const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+          const year = date.getFullYear();
+          return `${day}-${month}-${year}`;
+        }
+      },
       { Header: 'Category', accessor: 'category' },
       { Header: 'Sub Category', accessor: 'sub_category' },
       { Header: 'Product Design Name', accessor: 'design_master' },
       { Header: 'Barcode', accessor: 'PCode_BarCode' },
       { Header: 'Gross Wt', accessor: 'Gross_Weight' },
-      { Header: 'Stones Wt', accessor: 'Stones_Weight' },
-      { Header: 'Wasatage%', accessor: 'Wastage_Percentage' },
-      { Header: 'Total Wt', accessor: 'TotalWeight_AW' },
+      // { Header: 'Stones Wt', accessor: 'Stones_Weight' },
+      // { Header: 'Wasatage%', accessor: 'Wastage_Percentage' },
+      { Header: 'Net Wt', accessor: 'TotalWeight_AW' },
       { Header: 'MC', accessor: 'Making_Charges' },
+      { Header: 'Rate', accessor: 'rate' },
+      { Header: 'Total Amt', accessor: 'total_price' },
       { Header: 'Status', accessor: 'Status' },
       {
         Header: "Barcode",
@@ -527,7 +782,7 @@ const StockEntryTable = (selectedProduct) => {
                     readOnly
                   />
                 </div>
-                <div className="col-md-3">
+                <div className="col-md-2">
                   <InputField
                     label="Sub Category:"
                     name="sub_category"
@@ -544,9 +799,9 @@ const StockEntryTable = (selectedProduct) => {
                   onChange={handleChange}  
                 />
               </div> */}
-                <div className="col-md-3">
+                <div className="col-md-2">
                   <InputField
-                    label="Product Design Name"
+                    label="Design Name"
                     name="design_master"
                     type="select"
                     value={formData.design_master || ''}
@@ -554,20 +809,8 @@ const StockEntryTable = (selectedProduct) => {
                     options={designOptions.map(option => ({ value: option.value, label: option.label }))}
                   />
                 </div>
-                <div className="col-md-2">
-                  <InputField
-                    label="Purity"
-                    name="Purity"
-                    type="select"
-                    value={formData.Purity || ''}
-                    onChange={handleChange}
-                    options={purityOptions.map((option) => ({
-                      value: `${option.name} | ${option.purity}`, // Combined name and purity
-                      label: `${option.name} | ${option.purity}`,
-                    }))}
-                  />
-                </div>
-                <div className="col-md-2">
+
+                {/* <div className="col-md-2">
                   <InputField
                     label="Pricing:"
                     name="Pricing"
@@ -579,29 +822,14 @@ const StockEntryTable = (selectedProduct) => {
                       { value: "By fixed", label: "By fixed" },
                     ]}
                   />
-                </div>
+                </div> */}
                 <div className="col-md-2">
                   <InputField
-                    label="Cut"
-                    name="cut"
-                    value={formData.cut || ''}
+                    label="Pricing:"
+                    name="Pricing"
+                    value={formData.Pricing || ''}
                     onChange={handleChange}
-                  />
-                </div>
-                <div className="col-md-2">
-                  <InputField
-                    label="Color"
-                    name="color"
-                    value={formData.color || ''}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="col-md-2">
-                  <InputField
-                    label="Clarity"
-                    name="clarity"
-                    value={formData.clarity || ''}
-                    onChange={handleChange}
+                    readOnly
                   />
                 </div>
                 <div className="col-md-2">
@@ -612,6 +840,35 @@ const StockEntryTable = (selectedProduct) => {
                     value={formData.PCode_BarCode}
                     onChange={handleChange}
                     readOnly
+                  />
+                </div>
+                {/* <div className="col-md-2">
+                  <InputField
+                    label="Purity"
+                    name="Purity"
+                    type="select"
+                    value={formData.Purity || ''}
+                    onChange={handleChange}
+                    options={purityOptions.map((option) => ({
+                      value: `${option.name} | ${option.purity}`, // Combined name and purity
+                      label: `${option.name} | ${option.purity}`,
+                    }))}
+                  />
+                </div> */}
+                <div className="col-md-2">
+                  <InputField
+                    label="Printing Purity"
+                    name="printing_purity"
+                    value={formData.printing_purity || ''}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="col-md-2">
+                  <InputField
+                    label="Selling Purity"
+                    name="Purity"
+                    value={formData.Purity || ''}
+                    onChange={handleChange}
                   />
                 </div>
                 <div className="col-md-2">
@@ -677,9 +934,17 @@ const StockEntryTable = (selectedProduct) => {
                 </div>
                 <div className="col-md-2">
                   <InputField
-                    label="Total Weight:"
+                    label="Total Weight"
                     name="TotalWeight_AW"
                     value={formData.TotalWeight_AW || ''}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="col-md-2">
+                  <InputField
+                    label="Rate"
+                    name="rate"
+                    value={formData.rate || ''}
                     onChange={handleChange}
                   />
                 </div>
@@ -705,16 +970,35 @@ const StockEntryTable = (selectedProduct) => {
                     onChange={handleChange}
                   />
                 </div>
-                {(formData.Making_Charges_On === "MC / Gram" || formData.Making_Charges_On === "MC / Piece") && (
-                  <div className="col-md-2">
-                    <InputField
-                      label="MC"
-                      name="Making_Charges"
-                      value={formData.Making_Charges}
-                      onChange={handleChange}
-                    />
-                  </div>
-                )}
+                {/* {(formData.Making_Charges_On === "MC / Gram" || formData.Making_Charges_On === "MC / Piece") && ( */}
+                <div className="col-md-2">
+                  <InputField
+                    label="MC"
+                    name="Making_Charges"
+                    value={formData.Making_Charges}
+                    onChange={handleChange}
+                  />
+                </div>
+                {/* )} */}
+                <div className="col-md-2">
+                  <InputField
+                    label="Tax%"
+                    name="tax"
+                    value={formData.tax}
+                    onChange={handleChange}
+                    readOnly
+                  />
+                </div>
+                <div className="col-md-2">
+                  <InputField
+                    label="Total Amt"
+                    name="total_price"
+                    value={formData.total_price}
+                    onChange={handleChange}
+                    readOnly
+                  />
+
+                </div>
                 <div className="col-md-2">
                   <InputField
                     label="HUID No"
@@ -751,7 +1035,7 @@ const StockEntryTable = (selectedProduct) => {
               </Button>
               <Button className="create_but" type="" variant="success"
                 style={{ backgroundColor: '#a36e29', borderColor: '#a36e29' }}>
-                update
+                Update
               </Button>
 
             </form>

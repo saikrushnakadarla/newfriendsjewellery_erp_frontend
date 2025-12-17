@@ -76,6 +76,10 @@ const TagEntry = ({ handleCloseTagModal, selectedProduct, fetchBalance }) => {
         Making_Charges: "",
         Design_Master: selectedProduct.design_name,
         Weight_BW: "",
+        rate: "",
+        tax: "03% GST",
+        tax_amt: "",
+        total_price: "",
         pur_Gross_Weight: "",
         pur_rate_cut: "",
         pur_Purity: "",
@@ -130,6 +134,35 @@ const TagEntry = ({ handleCloseTagModal, selectedProduct, fetchBalance }) => {
 
     const [stoneList, setStoneList] = useState([]);
     const [editingStoneIndex, setEditingStoneIndex] = useState(null);
+
+    useEffect(() => {
+        const fetchCurrentRates = async () => {
+            try {
+                const response = await axios.get(`${baseURL}/get/current-rates`);
+                const newRates = {
+                    rate_24crt: response.data.rate_24crt || "",
+                    rate_22crt: response.data.rate_22crt || "",
+                    rate_18crt: response.data.rate_18crt || "",
+                    rate_16crt: response.data.rate_16crt || "",
+                    silver_rate: response.data.silver_rate || "",
+                };
+                setRates(newRates);
+
+                // Update form data based on metal type
+                const metalType = formData.metal_type?.toLowerCase();
+
+                setFormData((prev) => ({
+                    ...prev,
+                    rate_24k: metalType === "silver" ? newRates.silver_rate : newRates.rate_24crt,
+                }));
+            } catch (error) {
+                console.error('Error fetching current rates:', error);
+            }
+        };
+
+        fetchCurrentRates();
+    }, [formData.metal_type]);
+
 
     const handleAddStone = () => {
         let newStoneList = [...stoneList];
@@ -345,42 +378,119 @@ const TagEntry = ({ handleCloseTagModal, selectedProduct, fetchBalance }) => {
         const totalWeight = parseFloat(formData.TotalWeight_AW) || 0;
         const mcPerGram = parseFloat(formData.MC_Per_Gram) || 0;
         const makingCharges = parseFloat(formData.Making_Charges) || 0;
+        const rate = parseFloat(formData.rate) || 0;
+
         const purTotalWeight = parseFloat(formData.pur_TotalWeight_AW) || 0;
         const purMcPerGram = parseFloat(formData.pur_MC_Per_Gram) || 0;
         const purMakingCharges = parseFloat(formData.pur_Making_Charges) || 0;
+        const purRate = parseFloat(formData.pur_rate_cut) || 0;
+
+        /* ======================
+           SELLING MAKING CHARGES
+        ====================== */
 
         if (formData.Making_Charges_On === "MC / Gram") {
-            // Calculate Making Charges based on MC/Gram
             const calculatedMakingCharges = totalWeight * mcPerGram;
+
             setFormData((prev) => ({
                 ...prev,
-                Making_Charges: calculatedMakingCharges.toFixed(2), // Automatically set Making Charges
+                Making_Charges: calculatedMakingCharges.toFixed(2),
             }));
+
         } else if (formData.Making_Charges_On === "MC / Piece") {
-            // Calculate MC/Gram based on fixed Making Charges
-            const calculatedMcPerGram = totalWeight ? makingCharges / totalWeight : 0;
+            const calculatedMcPerGram = totalWeight
+                ? makingCharges / totalWeight
+                : 0;
+
             setFormData((prev) => ({
                 ...prev,
-                MC_Per_Gram: calculatedMcPerGram.toFixed(2), // Automatically set MC/Gram
+                MC_Per_Gram: calculatedMcPerGram.toFixed(2),
+            }));
+
+        } else if (formData.Making_Charges_On === "MC %") {
+            // rateAmount = rate × total weight
+            const rateAmount = rate * totalWeight;
+
+            const calculatedMakingCharges =
+                (mcPerGram * rateAmount) / 100;
+
+            setFormData((prev) => ({
+                ...prev,
+                Making_Charges: calculatedMakingCharges.toFixed(2),
             }));
         }
 
+        /* ======================
+           PURCHASE MAKING CHARGES
+        ====================== */
+
         if (formData.pur_Making_Charges_On === "MC / Gram") {
-            // Calculate Making Charges based on MC/Gram
-            const calculatedMakingCharges = purTotalWeight * purMcPerGram;
+            const calculatedMakingCharges =
+                purTotalWeight * purMcPerGram;
+
             setFormData((prev) => ({
                 ...prev,
-                pur_Making_Charges: calculatedMakingCharges.toFixed(2), // Automatically set Making Charges
+                pur_Making_Charges: calculatedMakingCharges.toFixed(2),
             }));
+
         } else if (formData.pur_Making_Charges_On === "MC / Piece") {
-            // Calculate MC/Gram based on fixed Making Charges
-            const calculatedMcPerGram = purTotalWeight ? purMakingCharges / purTotalWeight : 0;
+            const calculatedMcPerGram = purTotalWeight
+                ? purMakingCharges / purTotalWeight
+                : 0;
+
             setFormData((prev) => ({
                 ...prev,
-                pur_MC_Per_Gram: calculatedMcPerGram.toFixed(2), // Automatically set MC/Gram
+                pur_MC_Per_Gram: calculatedMcPerGram.toFixed(2),
+            }));
+
+        } else if (formData.pur_Making_Charges_On === "MC %") {
+            const rateAmount = purRate * purTotalWeight;
+
+            const calculatedMakingCharges =
+                (purMcPerGram * rateAmount) / 100;
+
+            setFormData((prev) => ({
+                ...prev,
+                pur_Making_Charges: calculatedMakingCharges.toFixed(2),
             }));
         }
     };
+
+
+    useEffect(() => {
+        const rate = parseFloat(formData.rate) || 0;
+        const weight = parseFloat(formData.TotalWeight_AW) || 0;
+        const stonesPrice = parseFloat(formData.Stones_Price) || 0;
+        const makingCharges = parseFloat(formData.Making_Charges) || 0;
+
+        // Step 1: Base amount
+        const baseAmount =
+            rate * weight + stonesPrice + makingCharges;
+
+        // Step 2: Extract tax percentage from string like "03% GST"
+        const taxPercent = parseFloat(formData.tax) || 0;
+
+
+        // Step 3: Calculate tax amount
+        const taxAmt = (baseAmount * taxPercent) / 100;
+
+        // Step 4: Final total
+        const totalPrice = baseAmount + taxAmt;
+
+        setFormData((prev) => ({
+            ...prev,
+            tax_amt: taxAmt.toFixed(2),
+            total_price: totalPrice.toFixed(2),
+        }));
+    }, [
+        formData.rate,
+        formData.TotalWeight_AW,
+        formData.Stones_Price,
+        formData.Making_Charges,
+        formData.tax,
+    ]);
+
+
 
     useEffect(() => {
         handleMakingChargesCalculation();
@@ -512,6 +622,35 @@ const TagEntry = ({ handleCloseTagModal, selectedProduct, fetchBalance }) => {
             }));
         }
     }, [formData.pur_Purity, formData.metal_type, rates]);
+
+
+    useEffect(() => {
+        if (!formData.Purity) {
+            setFormData((prev) => ({
+                ...prev,
+                rate: "",
+            }));
+            return;
+        }
+
+        const purityValue = parseFloat(formData.Purity);
+        const baseRate = parseFloat(formData.rate_24k); // 24K base rate
+
+        if (!isNaN(purityValue) && !isNaN(baseRate)) {
+            const calculatedRate = ((purityValue / 100) * baseRate).toFixed(2);
+
+            setFormData((prev) => ({
+                ...prev,
+                rate: calculatedRate,
+            }));
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                rate: "",
+            }));
+        }
+    }, [formData.Purity, formData.rate_24k]);
+
 
 
     const handleChange = async (fieldOrEvent, valueArg) => {
@@ -1096,42 +1235,53 @@ const TagEntry = ({ handleCloseTagModal, selectedProduct, fetchBalance }) => {
         const doc = new jsPDF();
         let qrContent = "";
 
+        /* ---------- QR CONTENT ---------- */
         if (data.Pricing === "By Weight") {
-            qrContent = `PCode: ${data.PCode_BarCode}, Name: ${data.sub_category}, Weight: ${data.Gross_Weight}, Tag Weight: ${data.tag_weight}, Total Weight AW: ${data.TotalWeight_AW}, Making Charges: ${data.Making_Charges}`;
+            qrContent = `
+Tag: ${data.PCode_BarCode}
+Purity: ${data.printing_purity}
+Net Wt: ${data.TotalWeight_AW}
+MRP: ${data.total_price}
+`;
         } else if (data.Pricing === "By fixed") {
-            qrContent = `PCode: ${data.PCode_BarCode}, Name: ${data.sub_category}, Piece Cost: ${data.pieace_cost}`;
+            qrContent = `
+PCode: ${data.PCode_BarCode}
+MRP: ${data.total_price}
+`;
         }
 
         try {
             const qrImageData = await QRCode.toDataURL(qrContent);
 
-            doc.setFontSize(10); // Set a smaller font size
+            /* ---------- HEADER ---------- */
+            doc.setFontSize(10);
             doc.text("Product QR Code", 10, 10);
-            doc.addImage(qrImageData, "PNG", 10, 15, 30, 30); // Smaller QR code
 
-            doc.setFontSize(8); // Reduce font size for text content
-            doc.text(`PCode: ${data.PCode_BarCode}`, 50, 20);
-            doc.text(`Name: ${data.sub_category}`, 50, 25);
-            
+            /* ---------- QR ---------- */
+            doc.addImage(qrImageData, "PNG", 10, 15, 30, 30);
+
+            /* ---------- TEXT ---------- */
+            doc.setFontSize(8);
+            doc.text(`Tag: ${data.PCode_BarCode}`, 50, 20);
 
             if (data.Pricing === "By Weight") {
-                doc.text(`Purity: ${data.Purity}`, 50, 30);
-                doc.text(`Gross Weight: ${data.Gross_Weight}`, 50, 35);
-                // doc.text(`Tag Weight: ${data.tag_weight}`, 50, 35);
-                doc.text(`Total Weight: ${data.TotalWeight_AW}`, 50, 40);
-                doc.text(`Making Charges: ${data.Making_Charges}`, 50, 45);
+                doc.text(`Purity: ${data.printing_purity}`, 50, 25);
+                doc.text(`Net Wt: ${data.TotalWeight_AW}`, 50, 30);
+                doc.text(`MRP: ${data.total_price}`, 50, 35);
             } else if (data.Pricing === "By fixed") {
-                doc.text(`Piece Cost: ${data.pieace_cost}`, 50, 30);
+                doc.text(`MRP: ${data.total_price}`, 50, 25);
             }
 
+            /* ---------- SAVE ---------- */
             const pdfBlob = doc.output("blob");
             await handleSavePDFToServer(pdfBlob, data.PCode_BarCode);
 
-            doc.save(`Tag_${data.PCode_BarCode}.pdf`);
+            // doc.save(`Tag_${data.PCode_BarCode}.pdf`);
         } catch (error) {
             console.error("Error generating QR Code PDF:", error);
         }
     };
+
 
     const handleSavePDFToServer = async (pdfBlob, pcode) => {
         const formData = new FormData();
@@ -1913,41 +2063,6 @@ const TagEntry = ({ handleCloseTagModal, selectedProduct, fetchBalance }) => {
 
                                                         <Col xs={12} md={4}>
                                                             <InputField
-                                                                label="MC On"
-                                                                name="Making_Charges_On"
-                                                                type="select"
-                                                                value={formData.Making_Charges_On}
-                                                                onChange={handleChange}
-                                                                options={[
-                                                                    { value: "MC / Gram", label: "MC / Gram" },
-                                                                    { value: "MC / Piece", label: "MC / Piece" },
-                                                                    { value: "MC %", label: "MC %" },
-                                                                ]}
-                                                            />
-                                                        </Col>
-
-                                                        <Col xs={12} md={3}>
-                                                            <InputField
-                                                                label={formData.MC_Per_Gram_Label}
-                                                                name="MC_Per_Gram"
-                                                                value={formData.MC_Per_Gram}
-                                                                onChange={handleChange}
-                                                            />
-                                                        </Col>
-
-                                                        {/* Show Making_Charges field only when Making_Charges_On is "MC / Gram" or "MC / Piece" */}
-                                                        {(formData.Making_Charges_On === "MC / Gram" || formData.Making_Charges_On === "MC / Piece") && (
-                                                            <Col xs={12} md={2}>
-                                                                <InputField
-                                                                    label="MC"
-                                                                    name="Making_Charges"
-                                                                    value={formData.Making_Charges}
-                                                                    onChange={handleChange}
-                                                                />
-                                                            </Col>
-                                                        )}
-                                                        <Col xs={12} md={4}>
-                                                            <InputField
                                                                 label="Wastage On"
                                                                 name="Wastage_On"
                                                                 type="select"
@@ -1962,18 +2077,73 @@ const TagEntry = ({ handleCloseTagModal, selectedProduct, fetchBalance }) => {
                                                         <Col xs={12} md={3}>
                                                             <InputField label="Wastage %" name="Wastage_Percentage" value={formData.Wastage_Percentage} onChange={handleChange} />
                                                         </Col>
-                                                        <Col xs={12} md={2}>
+                                                        <Col xs={12} md={3}>
                                                             <InputField label="W.Wt" name="WastageWeight" value={formData.WastageWeight} onChange={handleChange} readOnly />
                                                         </Col>
                                                         <Col xs={12} md={3}>
                                                             <InputField label="Total Wt" name="TotalWeight_AW" value={formData.TotalWeight_AW} onChange={handleChange} readOnly />
                                                         </Col>
+
+                                                        <Col xs={12} md={3}>
+                                                            <InputField label="Rate" name="rate" value={formData.rate} onChange={handleChange} />
+                                                        </Col>
+
+                                                        <Col xs={12} md={4}>
+                                                            <InputField
+                                                                label="MC On"
+                                                                name="Making_Charges_On"
+                                                                type="select"
+                                                                value={formData.Making_Charges_On}
+                                                                onChange={handleChange}
+                                                                options={[
+                                                                    { value: "MC / Gram", label: "MC / Gram" },
+                                                                    { value: "MC / Piece", label: "MC / Piece" },
+                                                                    { value: "MC %", label: "MC %" },
+                                                                ]}
+                                                            />
+                                                        </Col>
+
                                                         <Col xs={12} md={2}>
+                                                            <InputField
+                                                                label={formData.MC_Per_Gram_Label}
+                                                                name="MC_Per_Gram"
+                                                                value={formData.MC_Per_Gram}
+                                                                onChange={handleChange}
+                                                            />
+                                                        </Col>
+
+                                                        {/* Show Making_Charges field only when Making_Charges_On is "MC / Gram" or "MC / Piece" */}
+                                                        {/* {(formData.Making_Charges_On === "MC / Gram" || formData.Making_Charges_On === "MC / Piece") && ( */}
+                                                        <Col xs={12} md={3}>
+                                                            <InputField
+                                                                label="MC"
+                                                                name="Making_Charges"
+                                                                value={formData.Making_Charges}
+                                                                onChange={handleChange}
+                                                            />
+                                                        </Col>
+                                                        {/* )} */}
+
+
+
+                                                        <Col xs={12} md={3}>
+                                                            <InputField label="Tax%" name="tax" value={formData.tax} onChange={handleChange} />
+                                                        </Col>
+
+                                                        {/* <Col xs={12} md={3}>
+                                                            <InputField label="Tax Amt" name="tax_amt" value={formData.tax_amt} onChange={handleChange} />
+                                                        </Col> */}
+
+                                                        <Col xs={12} md={3}>
+                                                            <InputField label="Total Amt" name="total_price" value={formData.total_price} onChange={handleChange} />
+                                                        </Col>
+
+                                                        {/* <Col xs={12} md={2}>
                                                             <InputField label="Tag Wt" name="tag_weight" value={formData.tag_weight} onChange={handleChange} />
                                                         </Col>
                                                         <Col xs={12} md={2}>
                                                             <InputField label="Size" name="size" value={formData.size} onChange={handleChange} />
-                                                        </Col>
+                                                        </Col> */}
                                                     </Row>
                                                 </Col>
                                             </div>
@@ -2077,6 +2247,29 @@ const TagEntry = ({ handleCloseTagModal, selectedProduct, fetchBalance }) => {
 
                                                         <Col xs={12} md={4}>
                                                             <InputField
+                                                                label="Wastage On"
+                                                                name="pur_Wastage_On"
+                                                                type="select"
+                                                                value={formData.pur_Wastage_On}
+                                                                onChange={handleChange}
+                                                                options={[
+                                                                    { value: "Gross Weight", label: "Gross Weight" },
+                                                                    { value: "Weight BW", label: "Weight BW" },
+                                                                ]}
+                                                            />
+                                                        </Col>
+                                                        <Col xs={12} md={3}>
+                                                            <InputField label="Wastage %" name="pur_Wastage_Percentage" value={formData.pur_Wastage_Percentage} onChange={handleChange} />
+                                                        </Col>
+                                                        <Col xs={12} md={2}>
+                                                            <InputField label="W.Wt" name="pur_WastageWeight" value={formData.pur_WastageWeight} onChange={handleChange} readOnly />
+                                                        </Col>
+                                                        <Col xs={12} md={3}>
+                                                            <InputField label="Total Wt" name="pur_TotalWeight_AW" value={formData.pur_TotalWeight_AW} onChange={handleChange} readOnly />
+                                                        </Col>
+
+                                                        <Col xs={12} md={4}>
+                                                            <InputField
                                                                 label="MC On"
                                                                 name="pur_Making_Charges_On"
                                                                 type="select"
@@ -2100,40 +2293,19 @@ const TagEntry = ({ handleCloseTagModal, selectedProduct, fetchBalance }) => {
                                                         </Col>
 
                                                         {/* Show Making_Charges field only when Making_Charges_On is "MC / Gram" or "MC / Piece" */}
-                                                        {(formData.pur_Making_Charges_On === "MC / Gram" || formData.pur_Making_Charges_On === "MC / Piece") && (
-                                                            <Col xs={12} md={3}>
-                                                                <InputField
-                                                                    label="MC"
-                                                                    name="pur_Making_Charges"
-                                                                    value={formData.pur_Making_Charges}
-                                                                    onChange={handleChange}
-                                                                />
-                                                            </Col>
-                                                        )}
-
-
-                                                        <Col xs={12} md={4}>
+                                                        {/* {(formData.pur_Making_Charges_On === "MC / Gram" || formData.pur_Making_Charges_On === "MC / Piece") && ( */}
+                                                        <Col xs={12} md={3}>
                                                             <InputField
-                                                                label="Wastage On"
-                                                                name="pur_Wastage_On"
-                                                                type="select"
-                                                                value={formData.pur_Wastage_On}
+                                                                label="MC"
+                                                                name="pur_Making_Charges"
+                                                                value={formData.pur_Making_Charges}
                                                                 onChange={handleChange}
-                                                                options={[
-                                                                    { value: "Gross Weight", label: "Gross Weight" },
-                                                                    { value: "Weight BW", label: "Weight BW" },
-                                                                ]}
                                                             />
                                                         </Col>
-                                                        <Col xs={12} md={3}>
-                                                            <InputField label="Wastage %" name="pur_Wastage_Percentage" value={formData.pur_Wastage_Percentage} onChange={handleChange} />
-                                                        </Col>
-                                                        <Col xs={12} md={2}>
-                                                            <InputField label="W.Wt" name="pur_WastageWeight" value={formData.pur_WastageWeight} onChange={handleChange} readOnly />
-                                                        </Col>
-                                                        <Col xs={12} md={3}>
-                                                            <InputField label="Total Wt" name="pur_TotalWeight_AW" value={formData.pur_TotalWeight_AW} onChange={handleChange} readOnly />
-                                                        </Col>
+                                                        {/* )} */}
+
+
+
                                                         <Col xs={12} md={3}>
                                                             <InputField
                                                                 label="Rate"
@@ -2313,12 +2485,15 @@ const TagEntry = ({ handleCloseTagModal, selectedProduct, fetchBalance }) => {
                                             <th>Sub Category</th>
                                             <th>Design Name</th>
                                             <th>Gross Wt</th>
-                                            <th>Stone Wt</th>
+                                            {/* <th>Stone Wt</th>
                                             <th>Wt BW</th>
-                                            <th>W.Wt</th>
-                                            <th>{formData.MC_Per_Gram_Label || "MC"}</th> {/* Dynamically Updated */}
-                                            <th>Total Wt</th>
+                                            <th>W.Wt</th> */}
+                                            <th>Net Wt</th>
+                                            <th>MC</th>
+                                            <th>Rate</th>
+                                            <th>Total Amt</th>
                                             <th>Image</th>
+                                            <th>Barcode</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -2332,11 +2507,13 @@ const TagEntry = ({ handleCloseTagModal, selectedProduct, fetchBalance }) => {
                                                     <td>{item.sub_category}</td>
                                                     <td>{item.design_master}</td>
                                                     <td>{item.Gross_Weight}</td>
-                                                    <td>{item.Stones_Weight}</td>
+                                                    {/* <td>{item.Stones_Weight}</td>
                                                     <td>{item.Weight_BW}</td>
-                                                    <td>{item.WastageWeight}</td>
-                                                    <td>{item.MC_Per_Gram}</td> {/* MC column remains unchanged */}
+                                                    <td>{item.WastageWeight}</td> */}
                                                     <td>{item.TotalWeight_AW}</td>
+                                                    <td>{item.Making_Charges}</td>
+                                                    <td>{item.rate}</td>
+                                                    <td>{item.total_price}</td>
                                                     <td>
                                                         {item.image ? (
                                                             <img
@@ -2362,13 +2539,26 @@ const TagEntry = ({ handleCloseTagModal, selectedProduct, fetchBalance }) => {
                                                         )}
                                                     </td>
                                                     <td>
+                                                        <a
+                                                            href={`${baseURL}/invoices/${item.PCode_BarCode}.pdf`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            style={{ textDecoration: 'none' }}
+                                                        >
+                                                            📝 View
+                                                        </a>
+                                                    </td>
+                                                    <td>
                                                         <FaEye
                                                             style={{ cursor: "pointer", color: "green", marginRight: "10px" }}
                                                             onClick={() => handleView(item)}
                                                         />
                                                         <FaEdit
                                                             style={{ cursor: "pointer", color: "blue" }}
-                                                            onClick={() => handleEdit(item)}
+                                                            onClick={() => {
+                                                                handleEdit(item);
+                                                                setTimeout(() => handleEdit(item), 1); // trigger again
+                                                            }}
                                                         />
                                                         <FaTrash
                                                             style={{ cursor: "pointer", marginLeft: "10px", color: "red" }}
