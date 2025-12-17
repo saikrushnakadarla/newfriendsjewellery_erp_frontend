@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
         },
         image1: {
                 // width: 100,F
-                height: 50,
+                height: 80,
                 marginTop: 0,
 
         },
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
                 // justifyContent: 'center', 
                 alignItems: 'center',  // Centers the content horizontally
                 padding: 20,
-                marginTop: -60,
+                marginTop: -32,
         },
         heading: {
                 fontWeight: 'bold',
@@ -412,7 +412,7 @@ const TaxINVoiceReceipt = ({
                                         <View style={styles.contentContainer}>
 
                                                 {/* Flat No. Section */}
-                                                <View style={styles.leftColumn}>
+                                                <View style={{marginBottom:6}}>
                                                         <Text style={styles.flatNo}>
                                                                 Flat No : {company?.address || ""}
                                                         </Text>
@@ -427,11 +427,10 @@ const TaxINVoiceReceipt = ({
                                                 </View>
 
 
-                                                {/* Vertical Divider */}
-                                                <View style={styles.divider1} />
+
 
                                                 {/* Branch Section */}
-                                                <View style={styles.rightColumn}>
+                                                {/* <View style={styles.rightColumn}>
                                                         <Text style={[styles.branch, { fontFamily: 'Times-Bold' }]}>BRANCH:</Text>
 
                                                         <Text style={styles.branchContent}>
@@ -445,7 +444,7 @@ const TaxINVoiceReceipt = ({
                                                         <Text style={styles.branchContent}>
                                                                 {company?.city || ""}, {company?.state || ""} - {company?.pincode || ""}
                                                         </Text>
-                                                </View>
+                                                </View> */}
 
                                         </View>
 
@@ -747,7 +746,7 @@ const TaxINVoiceReceipt = ({
 
 
                                                 </View>
-                                                <View style={{ alignItems: "center", fontFamily: 'Times-Bold',  marginTop: 10 }}>
+                                                <View style={{ alignItems: "center", fontFamily: 'Times-Bold', marginTop: 10 }}>
                                                         <Text>
                                                                 (Rupees {netBillValueInWords} Only)
                                                         </Text>
