@@ -8,12 +8,12 @@ import baseURL from "../../../../Url/NodeBaseURL"; // Ensure this is correctly s
 function SubCategory() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { subcategory_id, metal_type } = state || {}; // Destructure state to get subcategory_id and location
-
+  const { subcategory_id, metal_type } = state || {}; 
+  const location = useLocation();
   const [formData, setFormData] = useState({
     category_id: "",
     metal_type_id: "",
-    metal_type: metal_type || "", // Initialize with passed metal_type if available
+    metal_type: metal_type || "", 
     category: "",
     sub_category_name: "",
     pricing: "By Weight",
@@ -22,10 +22,10 @@ function SubCategory() {
     selling_purity: "",
     printing_purity: "",
   });
-
   const [metalOptions, setMetalOptions] = useState([]);
   const [allCategoryOptions, setAllCategoryOptions] = useState([]);
   const [filteredCategoryOptions, setFilteredCategoryOptions] = useState([]);
+  const [pendingCategory, setPendingCategory] = useState(null);
 
   // Modify the useEffect that fetches metal types to preserve the passed metal_type
   useEffect(() => {
@@ -63,14 +63,12 @@ function SubCategory() {
     fetchMetalTypes();
   }, [metal_type, subcategory_id]);
 
-
-  // Fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(`${baseURL}/get/products`);
         const categories = response.data.map((item) => ({
-          value: item.product_name,
+          value: item.product_name.toUpperCase(), // Ensure uppercase
           label: item.product_name,
           id: item.product_id,
           metal_type: item.Category,
@@ -83,17 +81,23 @@ function SubCategory() {
     fetchCategories();
   }, []);
 
-  // Filter categories based on selected metal type
   useEffect(() => {
-    const filteredCategories = allCategoryOptions.filter(
-      (category) => category.metal_type === formData.metal_type
-    );
-    setFilteredCategoryOptions(filteredCategories);
-    setFormData((prevData) => ({
-      ...prevData,
-      category: "",
-      category_id: "",
-    }));
+    if (formData.metal_type) {
+      const filteredCategories = allCategoryOptions.filter(
+        (category) =>
+          category.metal_type.toLowerCase() === formData.metal_type.toLowerCase()
+      );
+      setFilteredCategoryOptions(filteredCategories);
+
+      // Reset category if metal type changes
+      setFormData((prevData) => ({
+        ...prevData,
+        category: "",
+        category_id: "",
+      }));
+    } else {
+      setFilteredCategoryOptions([]);
+    }
   }, [formData.metal_type, allCategoryOptions]);
 
   // Fetch subcategory data when subcategory_id is provided
@@ -103,13 +107,22 @@ function SubCategory() {
         try {
           const response = await axios.get(`${baseURL}/subcategory/${subcategory_id}`);
           const subcategoryData = response.data;
+          console.log("subcategoryData=", subcategoryData);
 
+          // Set all form data first
           setFormData((prevData) => ({
             ...prevData,
             ...subcategoryData,
-            category: subcategoryData.category?.toUpperCase() || "",
-            category_id: subcategoryData.category_id || "",
+            // Don't set category yet, wait for categories to load
           }));
+
+          // Store the subcategory's category info for later setting
+          if (subcategoryData.category) {
+            setPendingCategory({
+              category: subcategoryData.category.toUpperCase(),
+              category_id: subcategoryData.category_id || ""
+            });
+          }
         } catch (error) {
           console.error("Error fetching subcategory:", error);
         }
@@ -117,6 +130,31 @@ function SubCategory() {
       fetchSubcategoryData();
     }
   }, [subcategory_id]);
+
+  // Effect to set category after categories are loaded
+  useEffect(() => {
+    if (pendingCategory && allCategoryOptions.length > 0) {
+      // Find the matching category in uppercase
+      const matchingCategory = allCategoryOptions.find(
+        (cat) =>
+          cat.value === pendingCategory.category ||
+          cat.id === pendingCategory.category_id
+      );
+
+      if (matchingCategory) {
+        setFormData((prevData) => ({
+          ...prevData,
+          category: matchingCategory.value,
+          category_id: matchingCategory.id,
+        }));
+      }
+
+      // Clear pending category
+      setPendingCategory(null);
+    }
+  }, [allCategoryOptions, pendingCategory]);
+
+  // Modify handleChange function
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -126,15 +164,9 @@ function SubCategory() {
     }
 
     if (name === "metal_type") {
-      // Log the selected value to check
-      console.log("Selected Metal Type:", modifiedValue);
-
       const selectedMetal = metalOptions.find(
         (option) => option.value.toLowerCase() === modifiedValue.toLowerCase()
       );
-
-      // Log the selected metal to ensure it's found
-      console.log("Selected Metal:", selectedMetal);
 
       setFormData((prevData) => ({
         ...prevData,
@@ -144,10 +176,12 @@ function SubCategory() {
         category_id: "",
       }));
     } else if (name === "category") {
-      const selectedCategory = filteredCategoryOptions.find((option) => option.value === modifiedValue);
+      const selectedCategory = filteredCategoryOptions.find(
+        (option) => option.value === modifiedValue
+      );
       setFormData((prevData) => ({
         ...prevData,
-        category: selectedCategory?.value || "",
+        category: selectedCategory?.value || modifiedValue,
         category_id: selectedCategory?.id || "",
       }));
     } else {
@@ -158,44 +192,17 @@ function SubCategory() {
     }
   };
 
-
-  // Submit form data
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   // Log formData before submitting to check its structure
-  //   console.log("Form Data being submitted:", formData);
-  //   console.log("metal_type_id:", formData.metal_type_id);
-
-  //   try {
-  //     if (subcategory_id) {
-  //       await axios.put(`${baseURL}/subcategory/${subcategory_id}`, formData);
-  //       alert("Subcategory updated successfully!");
-  //     } else {
-  //       await axios.post(`${baseURL}/subcategory`, formData);
-  //       alert("Subcategory created successfully!");
-  //     }
-  //     // navigate("/subcategorytable");
-  //     // const from = location.state?.from || "/subcategorytable";
-
-  //     // navigate(-1);
-  //     // navigate("/sales", { state: { newSubCategory: formData.sub_category_name } });
-  //     const from = location.state?.from || "/subcategorytable";
-  //     navigate(from, {
-  //       state: { newSubCategory: formData.sub_category_name }
-  //     });
-
-  //   } catch (error) {
-  //     console.error("Error saving subcategory:", error.message);
-  //     alert("Failed to save subcategory. Please try again.");
-  //   }
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Check required fields based on pricing
     if (formData.pricing === "By Weight" && !formData.selling_purity) {
       alert("Selling Purity is required when pricing is By Weight");
+      return;
+    }
+
+    if (!formData.category) {
+      alert("Category is required");
       return;
     }
 
@@ -221,7 +228,7 @@ function SubCategory() {
       alert("Failed to save subcategory. Please try again.");
     }
   };
-  const location = useLocation();
+
   const handleBack = () => {
     // navigate("/subcategorytable");
     // const from = location.state?.from || "/subcategorytable";

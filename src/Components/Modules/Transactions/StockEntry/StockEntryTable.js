@@ -363,7 +363,7 @@ const StockEntryTable = (selectedProduct) => {
       const pdfBlob = doc.output("blob");
       await handleSavePDFToServer(pdfBlob, data.PCode_BarCode);
 
-      doc.save(`Tag_${data.PCode_BarCode}.pdf`);
+      // doc.save(`Tag_${data.PCode_BarCode}.pdf`);
     } catch (error) {
       console.error("Error generating QR Code PDF:", error);
     }
