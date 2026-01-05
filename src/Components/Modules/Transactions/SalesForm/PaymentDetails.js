@@ -58,7 +58,7 @@ const PaymentDetails = ({
   // In your component state
 
 
-  let rounded = Math.round(netPayAmount); // Rounds to nearest whole number
+  let rounded = Math.round(netPayableAmount); // Rounds to nearest whole number
   console.log(rounded);
 
   useEffect(() => {
@@ -140,7 +140,7 @@ const PaymentDetails = ({
       (field === 'chq_amt' ? newValue : parseFloat(paymentDetails.chq_amt || 0)) +
       (field === 'online_amt' ? newValue : parseFloat(paymentDetails.online_amt || 0));
 
-    if (totalAmount > netPayAmount) {
+    if (totalAmount > rounded) {
       alert('Total payment amount cannot exceed Net Payable Amount.');
       return;
     }

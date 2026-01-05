@@ -1231,57 +1231,152 @@ const TagEntry = ({ handleCloseTagModal, selectedProduct, fetchBalance }) => {
         }
     };
 
-    const generateAndDownloadPDF = async (data) => {
-        const doc = new jsPDF();
-        let qrContent = "";
+    // const generateAndDownloadPDF = async (data) => {
+    //     const doc = new jsPDF({
+    //         orientation: "landscape",
+    //         unit: "mm",
+    //         format: [65, 16],
+    //     });
 
-        /* ---------- QR CONTENT ---------- */
-        if (data.Pricing === "By Weight") {
-            qrContent = `
-Tag: ${data.PCode_BarCode}
-Purity: ${data.printing_purity}
-Net Wt: ${data.TotalWeight_AW}
-MRP: ${data.total_price}
-`;
-        } else if (data.Pricing === "By fixed") {
-            qrContent = `
-PCode: ${data.PCode_BarCode}
-MRP: ${data.total_price}
-`;
-        }
+    //     let textContent = [];
+
+    //     if (data.Pricing === "By Weight") {
+    //         textContent = [
+    //             `Tag: ${data.PCode_BarCode}`,
+    //             `Purity: ${data.printing_purity}`,
+    //             `Net Wt: ${data.TotalWeight_AW}`,
+    //             `MRP: ${data.total_price}`,
+    //         ];
+    //     } else {
+    //         textContent = [
+    //             `Tag: ${data.PCode_BarCode}`,
+    //             `MRP: ${data.total_price}`,
+    //         ];
+    //     }
+
+    //     try {
+    //         const qrImageData = await QRCode.toDataURL(textContent.join("\n"), {
+    //             margin: 0,
+    //         });
+
+    //         /* ---------- TEXT (LEFT) ---------- */
+    //         doc.setFontSize(4.6);
+
+    //         doc.text(textContent, 2, 4, {
+    //             lineHeightFactor: 2, // 🔥 THIS reduces vertical gap
+    //         });
+
+    //         /* ---------- QR (RIGHT) ---------- */
+    //         doc.addImage(qrImageData, "PNG", 49, 2, 12, 12);
+
+    //         const pdfBlob = doc.output("blob");
+    //         await handleSavePDFToServer(pdfBlob, data.PCode_BarCode);
+
+    //     } catch (error) {
+    //         console.error("PDF Error:", error);
+    //     }
+    // };
+
+    const generateAndDownloadPDF = async (data) => {
+        const doc = new jsPDF({
+            orientation: "landscape",
+            unit: "mm",
+            format: [65, 16],
+        });
+
+        const isByWeight = data.Pricing === "By Weight";
 
         try {
-            const qrImageData = await QRCode.toDataURL(qrContent);
+            const qrImageData = await QRCode.toDataURL(
+                [
+                    `TAG: ${data.PCode_BarCode}`,
+                    `TOPS ${data.printing_purity}`,
+                    `NT WT: ${data.TotalWeight_AW}`,
+                    `MRP: ${data.total_price}`,
+                ].join("\n"),
+                { margin: 0 }
+            );
 
-            /* ---------- HEADER ---------- */
-            doc.setFontSize(10);
-            doc.text("Product QR Code", 10, 10);
+            /* ---------- LEFT PRODUCT DETAILS ---------- */
+            let startX = 2;
+            let startY = 4;
+            let lineGap = 3.2;
+            let currentY = startY;
 
-            /* ---------- QR ---------- */
-            doc.addImage(qrImageData, "PNG", 10, 15, 30, 30);
+            doc.setFont("helvetica", "bold");
 
-            /* ---------- TEXT ---------- */
-            doc.setFontSize(8);
-            doc.text(`Tag: ${data.PCode_BarCode}`, 50, 20);
+            // TAG
+            doc.setFontSize(8.0);
+            doc.text(`TAG: ${data.PCode_BarCode}`, startX, currentY);
+            currentY += lineGap;
 
-            if (data.Pricing === "By Weight") {
-                doc.text(`Purity: ${data.printing_purity}`, 50, 25);
-                doc.text(`Net Wt: ${data.TotalWeight_AW}`, 50, 30);
-                doc.text(`MRP: ${data.total_price}`, 50, 35);
-            } else if (data.Pricing === "By fixed") {
-                doc.text(`MRP: ${data.total_price}`, 50, 25);
+            if (isByWeight) {
+                // TOPS
+                doc.text(`${data.sub_category}`, startX, currentY);
+                // doc.text(`${data.sub_category} ${data.printing_purity}`, startX, currentY);
+                currentY += lineGap;
+
+                // 🔽 NT WT (slightly smaller)
+                doc.setFontSize(8.0);
+                doc.text("NT WT:", startX, currentY);
+                doc.text(`${data.TotalWeight_AW}`, startX + 12, currentY); // move value right
+                currentY += lineGap;
             }
+
+            // 🔥 MRP (bigger)
+            doc.setFontSize(8.0);
+            doc.text("MRP:", startX, currentY);
+            doc.text(`${data.total_price}`, startX + 11, currentY); // move value right
+
+
+            /* ---------- QR CODE (RIGHT TOP) ---------- */
+            const qrX = 35;
+            const qrY = 2;
+            const qrSize = 7;
+
+            // ➡️ Move everything to the right by this amount
+            const moveRight = 6; // adjust: 4, 6, 8 etc.
+
+            // QR Image
+            doc.addImage(
+                qrImageData,
+                "PNG",
+                qrX + moveRight,
+                qrY,
+                qrSize,
+                qrSize
+            );
+
+            /* ---------- TEXT BELOW QR ---------- */
+            doc.setFont("helvetica", "bold");
+
+            // O/N text (keeps alignment with QR)
+            doc.setFontSize(4.2);
+            doc.text(
+                "O/N:",
+                qrX + moveRight,
+                qrY + qrSize + 2
+            );
+
+
+            // 🔼 Shop name – move left
+            doc.setFontSize(6.0);
+            doc.text(
+                "NEW FRIENDS JEWELLERS",
+                qrX - 2,              // ⬅️ move left (adjust 2–6 if needed)
+                qrY + qrSize + 4.5
+            );
+
+
 
             /* ---------- SAVE ---------- */
             const pdfBlob = doc.output("blob");
             await handleSavePDFToServer(pdfBlob, data.PCode_BarCode);
 
-            // doc.save(`Tag_${data.PCode_BarCode}.pdf`);
         } catch (error) {
-            console.error("Error generating QR Code PDF:", error);
+            console.error("PDF Error:", error);
         }
     };
-
 
     const handleSavePDFToServer = async (pdfBlob, pcode) => {
         const formData = new FormData();

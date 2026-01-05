@@ -73,6 +73,7 @@ import PurchasePayment from './Components/Modules/Transactions/Purchase/Purchase
 import Festoffers from './Components/Modules/Masters/FestivalOffers/FestOffers';
 import Festofferstable from './Components/Modules/Masters/FestivalOffers/FestOffersTable';
 import ItemSales from './Components/Modules/Reports/ItemSale/ItemSale';
+import StockReport from "./Components/Modules/Reports/StockReport/StockReport";
 
 function App() {
   const location = useLocation();
@@ -166,6 +167,7 @@ function App() {
           <Route path="/purchase-payment" element={<PurchasePayment />} />
           <Route path="/ratecuts" element={<RateCuts />} />
           <Route path="/itemsales" element={<ItemSales />} />
+          <Route path="/stockReport" element={<StockReport />} />
         </Routes>
       </AuthProvider>
     </>

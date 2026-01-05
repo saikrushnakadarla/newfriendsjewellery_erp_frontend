@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Page, Text, View, Document, StyleSheet, Image } from "@react-pdf/renderer";
-// import logo1 from '../../../../Navbar/sadashri.png'
 import logo1 from '../../../../Components/Pages/Images/newfriends_logo.jpg'
 import { toWords } from "number-to-words";
 import QRCode from "qrcode";
-import baseURL from '../../../../Url/NodeBaseURL';
-import axios from "axios";
 
 const styles = StyleSheet.create({
         page: {
                 padding: 5,
                 fontSize: 8,
-
         },
         section: {
                 marginBottom: 10,
@@ -21,22 +17,15 @@ const styles = StyleSheet.create({
                 flexDirection: "row",
                 marginBottom: 10,
         },
-        // column: {
-        //         width: '33%',
-        // },
         boldText: {
                 fontWeight: "bold",
-
         },
         image1: {
-                // width: 100,F
-                height: 80,
+                width: '90%',
+                height: 100,
                 marginTop: 0,
-
         },
         image2: {
-                // width: 50,
-                // height: 50,
                 marginTop: 0,
         },
         divider: {
@@ -45,13 +34,11 @@ const styles = StyleSheet.create({
                 borderBottomColor: "#000",
                 borderBottomStyle: "solid",
         },
-
         container: {
                 flex: 1,
-                // justifyContent: 'center', 
-                alignItems: 'center',  // Centers the content horizontally
+                alignItems: 'center',
                 padding: 20,
-                marginTop: -32,
+                marginTop: -10,
         },
         heading: {
                 fontWeight: 'bold',
@@ -60,17 +47,14 @@ const styles = StyleSheet.create({
                 marginBottom: 5,
         },
         contentContainer: {
-                flexDirection: 'row',  // Side by side layout
+                flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderBottomWidth: 1,  // Horizontal line under both sections
+                borderBottomWidth: 1,
                 borderColor: 'black',
-                // paddingBottom: 20,
-                width: '100%',  // Ensure it spans the entire width
+                width: '100%',
         },
         leftColumn: {
-                // flex: 1,
-                // paddingLeft: 100,
                 marginLeft: 100,
                 fontSize: 7,
         },
@@ -81,7 +65,6 @@ const styles = StyleSheet.create({
         },
         flatNo: {
                 marginBottom: 2,
-
         },
         cin: {
                 marginBottom: 2,
@@ -98,26 +81,22 @@ const styles = StyleSheet.create({
                 height: '100%',
                 backgroundColor: 'black',
         },
-
         horizontalLine1: {
-                width: '100%',  // Set width to 70%
+                width: '100%',
                 height: 1,
-                // backgroundColor: 'black',
-                alignSelf: 'center',  // Centers the line horizontally within its container
+                alignSelf: 'center',
                 marginBottom: 2,
         },
-
         horizontalLine: {
-                width: '100%',  // Set width to 70%
+                width: '100%',
                 height: 1,
                 backgroundColor: 'black',
-                alignSelf: 'center',  // Centers the line horizontally within its container
+                alignSelf: 'center',
                 marginBottom: 2,
         },
         boxContainer: {
                 width: '100%',
                 height: '100%',
-                marginTop: 5,
                 border: '1px solid black',
                 marginBottom: 20,
         },
@@ -132,7 +111,6 @@ const styles = StyleSheet.create({
                 borderBottomColor: '#000',
         },
         tableCell: {
-                // border: '1px solid #000',
                 padding: 5,
                 textAlign: 'center',
         },
@@ -201,10 +179,8 @@ const styles = StyleSheet.create({
                 textAlign: 'right',
                 marginTop: '-4'
         },
-
         lastheight: {
                 height: 28,
-                // marginTop:'10'
         },
         qrCodeContainer: {
                 alignItems: "center",
@@ -214,6 +190,124 @@ const styles = StyleSheet.create({
         qrCode: {
                 width: 100,
                 height: 100,
+        },
+        // New styles for the updated layout
+        logoContainer: {
+                width: '100%',
+                alignItems: 'center',
+                marginBottom: 5,
+        },
+        companyAddress: {
+                textAlign: 'center',
+                fontSize: 8,
+                marginBottom: 10,
+                fontFamily: 'Times-Bold',
+        },
+        detailsContainer: {
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                width: '100%',
+        },
+        leftContainer: {
+                width: '2%',
+                paddingRight: 10,
+                fontFamily: 'Times-Bold',
+        },
+        customerDetails: {
+                width: '56%',
+                paddingRight: 10,
+                fontFamily: 'Times-Bold',
+        },
+        taxInvoiceDetails: {
+                width: '30%',
+                paddingLeft: 10,
+                fontFamily: 'Times-Bold',
+        },
+        detailRow: {
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginBottom: 4,
+        },
+        detailLabel: {
+                flex: 1,
+        },
+        detailValue: {
+                textAlign: "right",
+                flex: 1,
+        },
+        // New styles for summary section
+        summaryContainer: {
+                marginTop: 10,
+                width: '100%',
+        },
+        summaryRow: {
+                flexDirection: "row",
+                justifyContent: "space-between",
+                fontFamily: 'Times-Bold',
+        },
+        summaryLeft: {
+                width: '40%',
+                paddingLeft: 10,
+        },
+        summaryMiddle: {
+                width: '20%',
+                paddingLeft: 10,
+        },
+        summaryRight: {
+                width: '40%',
+                paddingRight: 10,
+        },
+        summaryItem: {
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginBottom: 3,
+        },
+        // Modified itemsContainer to fill white space with borders
+        itemsContainer: {
+                minHeight: 200,
+                flexDirection: 'column',
+        },
+        // White space filler rows
+        fillerRow: {
+                display: 'flex',
+                flexDirection: 'row',
+                height: 22,
+        },
+        fillerCell: {
+                width: '4%',
+        },
+        fillerCellDescription: {
+                width: '24%',
+        },
+        fillerCellHSN: {
+                width: '8%',
+        },
+        fillerCellQty: {
+                width: '5%',
+        },
+        fillerCellPurity: {
+                width: '10%',
+        },
+        fillerCellGrossWt: {
+                width: '10%',
+        },
+        fillerCellStoneWt: {
+                width: '10%',
+        },
+        fillerCellNetWt: {
+                width: '10%',
+        },
+        fillerCellRate: {
+                width: '10%',
+        },
+        fillerCellMC: {
+                width: '10%',
+        },
+        fillerCellStAmt: {
+                width: '9%',
+        },
+        fillerCellTotal: {
+                width: '10%',
         },
 });
 
@@ -238,51 +332,6 @@ const TaxINVoiceReceipt = ({
         company
 }) => {
         const [qrCodeUrl, setQrCodeUrl] = useState("");
-        // const [data, setData] = useState([]); 
-        // const [company, setCompany] = useState(null);
-
-
-        // const fetchProducts = async () => {
-        //         try {
-        //                 const response = await fetch(`${baseURL}/get/products`);
-        //                 if (!response.ok) {
-        //                         throw new Error('Failed to fetch products');
-        //                 }
-        //                 const result = await response.json();
-        //                 setData(result);
-        //         } catch (error) {
-        //                 setError(error.message);
-        //         } finally {
-        //                 setLoading(false);
-        //         }
-        // };
-
-        // const fetchCompanies = async () => {
-        //         try {
-        //                 const response = await axios.get(`${baseURL}/get/companies`);
-
-        //                 const firstCompany = response.data?.[0] || null;
-
-        //                 // API returns array with one object
-        //                 setCompany(firstCompany);
-        //                 console.log("firstCompany=", firstCompany)
-
-        //         } catch (error) {
-        //                 setError(error.message);
-        //         } finally {
-        //                 setLoading(false);
-        //         }
-        // };
-
-
-
-        // useEffect(() => {
-        //         fetchCompanies();
-        // }, []);
-
-        // useEffect(() => {
-        //         fetchProducts();
-        // }, []);
 
         useEffect(() => {
                 const generateQRCode = async () => {
@@ -327,138 +376,96 @@ const TaxINVoiceReceipt = ({
         );
 
         // Convert the value into words
-        const netBillValueInWords = toWords(netPayableAmount).replace(/(^\w|\s\w)/g, (m) => m.toUpperCase()); // Capitalize words
+        const netBillValueInWords = toWords(netPayableAmount).replace(/(^\w|\s\w)/g, (m) => m.toUpperCase());
         const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const formatDate = (dateString) => {
                 if (!dateString) return "";
                 const date = new Date(dateString);
                 const day = String(date.getDate()).padStart(2, '0');
-                const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+                const month = String(date.getMonth() + 1).padStart(2, '0');
                 const year = date.getFullYear();
                 return `${day}-${month}-${year}`;
         };
 
+        // Format company address in one line
+        const companyAddress = `${company?.address || ""}, ${company?.address2 || ""}, ${company?.city || ""}, ${company?.state || ""} - ${company?.pincode || ""}`;
+
+        // Calculate how many filler rows we need
+        const itemCount = repairDetails.length;
+        const fillerRowsNeeded = Math.max(0, 10 - itemCount); // Adjust 10 to control how many rows total you want
 
         return (
                 <Document>
                         <Page size="A4" style={styles.page}>
-                                {/* First Row */}
-                                <View style={styles.row}>
-                                        <View style={[styles.column, { marginTop: 20, width: "20%", marginLeft: 20, fontFamily: "Times-Bold" }]}>
+                                {/* Logo covering full width at the top */}
+                                <View style={styles.logoContainer}>
+                                        <Image style={styles.image1} src={logo1} />
+                                </View>
+
+                                {/* Company address in one line below logo */}
+                                <View style={styles.companyAddress}>
+                                        <Text>{companyAddress}</Text>
+                                </View>
+
+                                {/* Customer Details (Left) and Tax Invoice Details (Right) side by side */}
+                                <View style={styles.detailsContainer}>
+                                        {/* Left Column - Customer Details */}
+                                        <View style={styles.leftContainer}></View>
+                                        <View style={styles.customerDetails}>
                                                 <Text style={[styles.boldText, { marginBottom: 5 }]}>CUSTOMER DETAILS:</Text>
-                                                <Text style={{ marginBottom: 5 }}>{formData.account_name || ""},</Text>
-                                                <Text style={{ marginBottom: 5 }}>{formData.city}</Text>
-                                                <Text style={{ marginBottom: 5 }}>MOBILE: {formData.mobile}</Text>
-                                                <Text style={{ marginBottom: 5 }}>PAN NO: {formData.pan_card}</Text>
-                                        </View>
-                                        <View style={[styles.column, { width: "5%" }]}></View>
-
-                                        <View style={[styles.column, { width: "40%" }]}>
-                                                <Image style={styles.image1} src={logo1} />
+                                                <Text style={{ marginBottom: 4 }}>{formData.account_name || ""},</Text>
+                                                <Text style={{ marginBottom: 4 }}>MOBILE: {formData.mobile}</Text>
+                                                <Text style={{ marginBottom: 4 }}>GSTIN: {formData.gst_in}</Text>
+                                                <Text style={{ marginBottom: 4 }}>PAN NO: {formData.pan_card}</Text>
+                                                <Text style={{ marginBottom: 4 }}>Aadhar: {formData.aadhar_card}</Text>
+                                                <Text style={{ marginBottom: 4 }}>Address: {formData.address1}, {formData.address2}, {formData.city}, {formData.state} - {formData.pincode}</Text>
                                         </View>
 
-                                        <View style={[styles.column, { width: "5%" }]}></View>
-
-                                        <View style={[styles.column, { marginTop: 0, width: "20%", marginLeft: 20, fontFamily: "Times-Bold" }]}>
-                                                <Text style={{ fontWeight: "bold", fontSize: 12, marginBottom: 10, marginLeft: 20 }}>TAX INVOICE</Text>
+                                        {/* Right Column - Tax Invoice Details */}
+                                        <View style={styles.taxInvoiceDetails}>
+                                                <Text style={{ fontWeight: "bold", fontSize: 12, marginBottom: 10, textAlign: 'center' }}>TAX INVOICE</Text>
 
                                                 {/* BILL NO */}
-                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
-                                                        <Text>BILL NO:</Text>
-                                                        <Text style={{ textAlign: "right", flex: 1 }}>{formData.invoice_number}</Text>
+                                                <View style={styles.detailRow}>
+                                                        <Text style={styles.detailLabel}>BILL NO:</Text>
+                                                        <Text style={styles.detailValue}>{formData.invoice_number}</Text>
                                                 </View>
 
                                                 {/* DATE */}
-                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
-                                                        <Text>DATE:</Text>
-                                                        <Text style={{ textAlign: "right", flex: 1 }}>{formatDate(formData.date)}</Text>
+                                                <View style={styles.detailRow}>
+                                                        <Text style={styles.detailLabel}>DATE:</Text>
+                                                        <Text style={styles.detailValue}>{formatDate(formData.date)}</Text>
                                                 </View>
 
-
-                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
-                                                        <Text>TIME:</Text>
-                                                        <Text style={{ textAlign: "right", flex: 1 }}>
-                                                                {currentTime}
-                                                        </Text>
+                                                {/* TIME */}
+                                                <View style={styles.detailRow}>
+                                                        <Text style={styles.detailLabel}>TIME:</Text>
+                                                        <Text style={styles.detailValue}>{currentTime}</Text>
                                                 </View>
-
-
-                                                {/* STAFF */}
 
                                                 {/* GSTIN */}
-                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
-                                                        <Text>GSTIN:</Text>
-                                                        <Text style={{ textAlign: "right", flex: 1 }}>
+                                                <View style={styles.detailRow}>
+                                                        <Text style={styles.detailLabel}>GSTIN:</Text>
+                                                        <Text style={styles.detailValue}>
                                                                 {company?.gst_no?.trim() ? company.gst_no : ""}
                                                         </Text>
                                                 </View>
 
-
-
-
-                                        </View>
-                                </View>
-
-
-                                <View style={styles.container}>
-                                        {/* Centered Heading */}
-                                        <Text style={[styles.heading, { fontFamily: 'Times-Bold' }]}>
-                                                {company?.company_name?.toUpperCase() || ""}
-                                        </Text>
-
-
-
-                                        {/* Flat No. and Branch section */}
-                                        <View style={styles.contentContainer}>
-
-                                                {/* Flat No. Section */}
-                                                <View style={{marginBottom:6}}>
-                                                        <Text style={styles.flatNo}>
-                                                                Flat No : {company?.address || ""}
-                                                        </Text>
-
-                                                        <Text style={styles.cin}>
-                                                                Road/Street: {company?.address2 || ""}
-                                                        </Text>
-
-                                                        <Text style={styles.cin}>
-                                                                {company?.city || ""}, {company?.state || ""} - {company?.pincode || ""}
-                                                        </Text>
+                                                {/* Contact Info */}
+                                                <View style={styles.detailRow}>
+                                                        <Text style={styles.detailLabel}>MOBILE:</Text>
+                                                        <Text style={styles.detailValue}>{company?.mobile || ""}</Text>
                                                 </View>
 
-
-
-
-                                                {/* Branch Section */}
-                                                {/* <View style={styles.rightColumn}>
-                                                        <Text style={[styles.branch, { fontFamily: 'Times-Bold' }]}>BRANCH:</Text>
-
-                                                        <Text style={styles.branchContent}>
-                                                                {company?.address || ""},
-                                                        </Text>
-
-                                                        <Text style={styles.branchContent}>
-                                                                {company?.address2 || ""},
-                                                        </Text>
-
-                                                        <Text style={styles.branchContent}>
-                                                                {company?.city || ""}, {company?.state || ""} - {company?.pincode || ""}
-                                                        </Text>
-                                                </View> */}
-
+                                                <View style={styles.detailRow}>
+                                                        <Text style={styles.detailValue}>{company?.phone || ""}</Text>
+                                                </View>
                                         </View>
+                                        <View style={styles.leftContainer}></View>
+                                </View>
 
-                                        {/* Horizontal Divider under both sections */}
-                                        <View style={styles.horizontalLine1} />
-
-                                        <View>
-                                                <Text>
-                                                        Mob : {company?.mobile?.toUpperCase() || ""}
-                                                </Text>
-
-                                        </View>
-
-
+                                {/* Rest of the content */}
+                                <View style={styles.container}>
                                         <View style={styles.boxContainer}>
                                                 <View style={styles.table}>
                                                         <View style={[styles.tableRow, { fontFamily: 'Times-Bold' }]}>
@@ -488,7 +495,7 @@ const TaxINVoiceReceipt = ({
                                                                 <View style={styles.divider1} />
 
                                                                 <Text style={[styles.tableCell, styles.tableCellNetWt]}>Net.Wt
-                                                                        <Text style={{ fontFamily: 'Times-Roman', fontSize: 7 }}>             In Gms</Text>
+                                                                        <Text style={{ fontFamily: 'Times-Roman', fontSize: 7 }}>   In Gms</Text>
                                                                 </Text>
                                                                 <View style={styles.divider1} />
 
@@ -505,247 +512,286 @@ const TaxINVoiceReceipt = ({
                                                         </View>
                                                         <View style={styles.horizontalLine} />
 
-                                                        {/* Add rows of data below */}
-                                                        {repairDetails.map((item, index) => {
-                                                                const matchedProduct = product.find(product => product.product_name === item.category);
+                                                        {/* Items container with actual items and filler rows */}
+                                                        <View style={styles.itemsContainer}>
+                                                                {/* Actual items */}
+                                                                {repairDetails.map((item, index) => {
+                                                                        const matchedProduct = product.find(product => product.product_name === item.category);
 
-                                                                return (
-                                                                        <View style={[styles.tableRow, { fontFamily: 'Times-Roman' }]} key={index}>
-                                                                                <Text style={[styles.tableCell, styles.tableCellHeader]}>{index + 1}</Text>
+                                                                        return (
+                                                                                <View style={[styles.tableRow, { fontFamily: 'Times-Roman' }]} key={index}>
+                                                                                        <Text style={[styles.tableCell, styles.tableCellHeader]}>{index + 1}</Text>
+                                                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
+                                                                                        <Text style={[styles.tableCell, styles.tableCellDescription]}>
+                                                                                                {item.metal_type || "N/A"}-{item.product_name || "N/A"}
+                                                                                        </Text>
+                                                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
+                                                                                        <Text style={[styles.tableCell, styles.tableCellHSN]}>{matchedProduct?.hsn_code || "7113"}</Text>
+                                                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
+                                                                                        <Text style={[styles.tableCell, styles.tableCellQty]}>
+                                                                                                {item.qty || "0"}
+                                                                                        </Text>
+                                                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
+                                                                                        {/* <Text style={[styles.tableCell, styles.tableCellPurity]}>
+                                                                                                {(() => {
+                                                                                                        const category = item.metal_type?.toLowerCase();
+                                                                                                        if (category === "gold") return "22C";
+                                                                                                        if (category === "silver") return "22C";
+                                                                                                        if (category === "diamond") return "22C";
+                                                                                                        return "";
+                                                                                                })()}
+                                                                                        </Text> */}
+
+                                                                                        <Text style={[styles.tableCell, styles.tableCellPurity]}>
+                                                                                                {item.printing_purity || "0.000"}
+                                                                                        </Text>
+
+                                                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
+                                                                                        <Text style={[styles.tableCell, styles.tableCellGrossWt]}>
+                                                                                                {item.gross_weight || "0.000"}
+                                                                                        </Text>
+
+                                                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
+                                                                                        <Text style={[styles.tableCell, styles.tableCellStoneWt]}>
+                                                                                                {item.stone_weight || "0.000"}
+                                                                                        </Text>
+                                                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
+                                                                                        <Text style={[styles.tableCell, styles.tableCellNetWt]}>
+                                                                                                {item.total_weight_av || "0.000"}
+                                                                                        </Text>
+                                                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
+                                                                                        <Text style={[styles.tableCell, styles.tableCellRate]}>
+                                                                                                {item.pieace_cost ? item.pieace_cost : item.rate}
+                                                                                        </Text>
+                                                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
+                                                                                        <Text style={[styles.tableCell, styles.tableCellMC]}>
+                                                                                                {item.mc_per_gram != null && item.mc_per_gram !== ""
+                                                                                                        ? (['gold', 'diamond', 'others'].includes(item.metal_type?.toLowerCase())
+                                                                                                                ? `${parseFloat(item.mc_per_gram).toFixed(2)} %`
+                                                                                                                : parseFloat(item.mc_per_gram).toFixed(2))
+                                                                                                        : ''}
+                                                                                        </Text>
+
+                                                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
+                                                                                        <Text style={[styles.tableCell, styles.tableCellStAmt]}>
+                                                                                                {item.stone_price || "0.00"}
+                                                                                        </Text>
+                                                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
+                                                                                        <Text style={[styles.tableCell, styles.tableCellTotal]}>
+                                                                                                {(parseFloat(item.rate_amt || 0) + parseFloat(item.stone_price || 0) + parseFloat(item.making_charges || 0)).toFixed(2) || "0.00"}
+                                                                                        </Text>
+                                                                                </View>
+                                                                        );
+                                                                })}
+
+                                                                {/* Filler rows to maintain table structure with borders */}
+                                                                {Array.from({ length: fillerRowsNeeded }).map((_, index) => (
+                                                                        <View style={[styles.fillerRow, { fontFamily: 'Times-Roman' }]} key={`filler-${index}`}>
+                                                                                <Text style={[styles.fillerCell]}></Text>
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
-                                                                                <Text style={[styles.tableCell, styles.tableCellDescription]}>
-                                                                                        {item.metal_type || "N/A"}-{item.product_name || "N/A"}
-                                                                                </Text>
+                                                                                <Text style={[styles.fillerCellDescription]}></Text>
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
-                                                                                <Text style={[styles.tableCell, styles.tableCellHSN]}>{matchedProduct?.hsn_code || "7113"}</Text>
+                                                                                <Text style={[styles.fillerCellHSN]}></Text>
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
-                                                                                <Text style={[styles.tableCell, styles.tableCellQty]}>
-                                                                                        {item.qty || "0"}
-                                                                                </Text>
+                                                                                <Text style={[styles.fillerCellQty]}></Text>
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
-                                                                                <Text style={[styles.tableCell, styles.tableCellPurity]}>
-                                                                                        {(() => {
-                                                                                                const category = item.metal_type?.toLowerCase();
-                                                                                                if (category === "gold") return "22C";
-                                                                                                if (category === "silver") return "22C";
-                                                                                                if (category === "diamond") return "22C";
-                                                                                                return "";
-                                                                                        })()}
-                                                                                </Text>
-                                                                                {/* <Text style={[styles.tableCell, styles.tableCellPurity]}>
-                                                                                        {(() => {
-                                                                                                if (item.pricing === "By fixed") {
-                                                                                                        return item.printing_purity || "";
-                                                                                                }
-
-                                                                                                const category = item.category?.toLowerCase();
-                                                                                                if (category === "gold jewellery") return "91.6 HM";
-                                                                                                if (category === "silver articles") return "92.5 Sterling";
-                                                                                                if (category === "silver jewellery") return "80 HM";
-                                                                                                if (category === "diamond jewellery") return "91.6 HM";
-                                                                                                return "";
-                                                                                        })()}
-                                                                                </Text> */}
-                                                                                {/* <Text style={[styles.tableCell, styles.tableCellPurity]}>
-                                                                                        {item.printing_purity || "0.00"}
-                                                                                </Text> */}
-
+                                                                                <Text style={[styles.fillerCellPurity]}></Text>
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
-                                                                                <Text style={[styles.tableCell, styles.tableCellGrossWt]}>
-                                                                                        {item.gross_weight || "0.000"}
-                                                                                </Text>
-
+                                                                                <Text style={[styles.fillerCellGrossWt]}></Text>
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
-                                                                                <Text style={[styles.tableCell, styles.tableCellStoneWt]}>
-                                                                                        {item.stone_weight || "0.000"}
-                                                                                </Text>
+                                                                                <Text style={[styles.fillerCellStoneWt]}></Text>
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
-                                                                                <Text style={[styles.tableCell, styles.tableCellNetWt]}>
-                                                                                        {item.total_weight_av || "0.000"}
-                                                                                </Text>
+                                                                                <Text style={[styles.fillerCellNetWt]}></Text>
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
-                                                                                <Text style={[styles.tableCell, styles.tableCellRate]}>
-                                                                                        {/* {item.rate || "0.00"} */}
-                                                                                        {item.pieace_cost ? item.pieace_cost : item.rate}
-                                                                                </Text>
+                                                                                <Text style={[styles.fillerCellRate]}></Text>
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
-                                                                                <Text style={[styles.tableCell, styles.tableCellMC]}>
-                                                                                        {item.mc_per_gram != null && item.mc_per_gram !== ""
-                                                                                                ? (['gold', 'diamond', 'others'].includes(item.metal_type?.toLowerCase())
-                                                                                                        ? `${parseFloat(item.mc_per_gram).toFixed(2)} %`
-                                                                                                        : parseFloat(item.mc_per_gram).toFixed(2))
-                                                                                                : ''}
-                                                                                </Text>
-
-
-
+                                                                                <Text style={[styles.fillerCellMC]}></Text>
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
-                                                                                <Text style={[styles.tableCell, styles.tableCellStAmt]}>
-                                                                                        {item.stone_price || "0.00"}
-                                                                                </Text>
+                                                                                <Text style={[styles.fillerCellStAmt]}></Text>
                                                                                 <View style={[styles.divider1, { marginTop: -2 }]} />
 
-                                                                                <Text style={[styles.tableCell, styles.tableCellTotal]}>
-                                                                                        {(parseFloat(item.rate_amt || 0) + parseFloat(item.stone_price || 0) + parseFloat(item.making_charges || 0)).toFixed(2) || "0.00"}
-                                                                                </Text>
+                                                                                <Text style={[styles.fillerCellTotal]}></Text>
                                                                         </View>
-                                                                );
-                                                        })}
-
-
+                                                                ))}
+                                                        </View>
                                                 </View>
 
                                                 <View style={[styles.horizontalLine, { marginTop: -2 }]} />
 
+                                                {/* Total row */}
                                                 <View style={[styles.tableRow, { fontFamily: 'Times-Bold' }]}>
                                                         <Text style={[styles.tableCell, styles.tableCellHeader, styles.lastheight]}></Text>
+                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
                                                         <Text style={[styles.tableCell, styles.tableCellDescription, styles.lastheight]}></Text>
+                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
                                                         <Text style={[styles.tableCell, styles.tableCellHSN, styles.lastheight]}></Text>
+                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
                                                         <Text style={[styles.tableCell, styles.tableCellQty, styles.lastheight]}>
                                                                 {Math.round(totalValues.qty)}
                                                         </Text>
+                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
                                                         <Text style={[styles.tableCell, styles.tableCellPurity, styles.lastheight]}></Text>
+                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
                                                         <Text style={[styles.tableCell, styles.tableCellGrossWt, styles.lastheight]}>
                                                                 {totalValues.grossWeight.toFixed(3)}
                                                         </Text>
+                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
                                                         <Text style={[styles.tableCell, styles.tableCellStoneWt, styles.lastheight]}>
                                                                 {/* {totalValues.stoneWeight.toFixed(2)} */}
                                                         </Text>
+                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
                                                         <Text style={[styles.tableCell, styles.tableCellNetWt, styles.lastheight]}>
                                                                 {totalValues.netWeight.toFixed(3)}
                                                         </Text>
+                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
                                                         <Text style={[styles.tableCell, styles.tableCellRate, styles.lastheight]}>
                                                                 {/* {totalValues.rate.toFixed(2)} */}
                                                         </Text>
+                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
                                                         <Text style={[styles.tableCell, styles.tableCellMC, styles.lastheight]}>
                                                                 {/* {totalValues.makingCharges.toFixed(2)} */}
                                                         </Text>
+                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
                                                         <Text style={[styles.tableCell, styles.tableCellStAmt, styles.lastheight]}>
                                                                 {/* {totalValues.stonePrice.toFixed(2)} */}
                                                         </Text>
-                                                        {/* <Text style={[styles.tableCell, styles.tableCellTotal, styles.lastheight]}>
-                                                                {totalValues.rateAmount.toFixed(2)}
-                                                        </Text> */}
+                                                        <View style={[styles.divider1, { marginTop: -2 }]} />
+
                                                         <Text style={[styles.tableCell, styles.tableCellTotal, styles.lastheight]}>
                                                                 {(totalValues.rateAmount + totalValues.makingCharges + totalValues.stonePrice).toFixed(2)}
                                                         </Text>
                                                 </View>
 
-
                                                 <View style={[styles.horizontalLine, { marginTop: -2 }]} />
 
+                                                {/* Summary section moved to bottom */}
+                                                <View style={styles.summaryContainer}>
+                                                        <View style={styles.summaryRow}>
+                                                                {/* Left Side Content */}
+                                                                <View style={styles.summaryLeft}>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>Cash Recd:</Text>
+                                                                                <Text>{Number(cash_amount || 0).toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>Card Recd:</Text>
+                                                                                <Text>{Number(card_amt || 0).toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>Cheque Recd:</Text>
+                                                                                <Text>{Number(chq_amt || 0).toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>NEFT Recd:</Text>
+                                                                                <Text>{Number(online_amt || 0).toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>Balance Amount:</Text>
+                                                                                <Text>
+                                                                                        {(
+                                                                                                Math.round(Number(netPayableAmount || 0)) -
+                                                                                                (Number(cash_amount || 0) +
+                                                                                                        Number(chq_amt || 0) +
+                                                                                                        Number(card_amt || 0) +
+                                                                                                        Number(online_amt || 0))
+                                                                                        ).toFixed(2)}
+                                                                                </Text>
+                                                                        </View>
+                                                                        <View style={[styles.summaryItem, { marginTop: 20 }]}>
+                                                                                <Text>Bank A/C No:</Text>
+                                                                                <Text>{company?.bank_account_no || ""}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>Bank A/C Name:</Text>
+                                                                                <Text>{company?.bank_name || ""}</Text>
+                                                                        </View>
+                                                                         <View style={styles.summaryItem}>
+                                                                                <Text>IFSC Code:</Text>
+                                                                                <Text>{company?.ifsc_code || ""}</Text>
+                                                                        </View>
+                                                                        {/* <View style={[styles.summaryItem, { marginTop: 10 }]}>
+                                                                                <Text style={{ color: 'green' }}>Fest Discount:</Text>
+                                                                                <Text style={{ color: 'green' }}>{festivalDiscountAmt.toFixed(2)}</Text>
+                                                                        </View> */}
+                                                                </View>
 
-                                                <View style={{ flexDirection: "row", justifyContent: "space-between", fontFamily: 'Times-Bold' }}>
-                                                        {/* Left Side Content */}
-
-                                                        <View style={{ paddingLeft: 10, marginTop: 20 }}>
-                                                                <Text style={[styles.bold, { marginBottom: 3 }]}>
-                                                                        Cash Recd: {Number(cash_amount || 0).toFixed(2)}
-                                                                </Text>
-                                                                <Text style={[styles.bold, { marginBottom: 3 }]}>
-                                                                        Card Recd: {Number(card_amt || 0).toFixed(2)}
-                                                                </Text>
-                                                                <Text style={[styles.bold, { marginBottom: 3 }]}>
-                                                                        Cheque Recd: {Number(chq_amt || 0).toFixed(2)}
-                                                                </Text>
-                                                                <Text style={[styles.bold, { marginBottom: 3 }]}>
-                                                                        NEFT Recd: {Number(online_amt || 0).toFixed(2)} #: Bank:
-                                                                </Text>
-
-                                                                <Text style={[styles.bold, { marginBottom: 3 }]}>
-                                                                        Balance Amount:{" "}
-                                                                        {(
-                                                                                Math.round(Number(netPayableAmount || 0)) -
-                                                                                (Number(cash_amount || 0) +
-                                                                                        Number(chq_amt || 0) +
-                                                                                        Number(card_amt || 0) +
-                                                                                        Number(online_amt || 0))
-                                                                        ).toFixed(2)}
-                                                                </Text>
-                                                                <Text style={[styles.bold, { marginBottom: 3 }]}>
-                                                                        Bank A/C No : {company?.bank_account_no || ""}
-                                                                </Text>
-                                                                <Text style={[styles.bold, { marginBottom: 3 }]}>
-                                                                        Bank A/C Name : {company?.bank_name || ""}
-                                                                </Text>
-
-                                                                <Text style={{ fontWeight: 'bold', fontSize: '15px', color: 'green', marginLeft: '190px', marginTop: '15px' }}>
-                                                                        Fest Discount: {festivalDiscountAmt.toFixed(2)}
-                                                                </Text>
+                                                                {/* Right Side Content */}
+                                                                <View style={styles.summaryRight}>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>(-) Discount:</Text>
+                                                                                <Text>{discountAmt.toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>(-) Fest Discount:</Text>
+                                                                                <Text>{festivalDiscountAmt.toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>GST Value:</Text>
+                                                                                <Text>{taxableAmount.toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>CGST @1.50%:</Text>
+                                                                                <Text>{(taxAmount / 2).toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>SGST @1.50%:</Text>
+                                                                                <Text>{(taxAmount / 2).toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>Net Bill Value:</Text>
+                                                                                <Text>{netAmount.toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>(-) OLD:</Text>
+                                                                                <Text>{oldItemsAmount.toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>(-) SCHEME:</Text>
+                                                                                <Text>{schemeAmount.toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>(-) SALE RETURN:</Text>
+                                                                                <Text>{salesNetAmount.toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>Net Amount:</Text>
+                                                                                <Text>{Math.round(netPayableAmount).toFixed(2)}</Text>
+                                                                        </View>
+                                                                </View>
                                                         </View>
-                                                        {/* {repairDetails.map((item, index) => ( */}
-                                                        <View style={{ paddingRight: 10, marginTop: 5 }}>
-                                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
-                                                                        <Text style={{ marginRight: "10px" }}>(-) Discount:</Text>
-                                                                        <Text style={{ textAlign: "right" }}>{discountAmt.toFixed(2)}</Text>
-                                                                </View>
-                                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
-                                                                        <Text style={{ marginRight: "10px" }}>(-) Fest Discount:</Text>
-                                                                        <Text style={{ textAlign: "right" }}>{festivalDiscountAmt.toFixed(2)}</Text>
-                                                                </View>
-                                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
-                                                                        <Text style={{ marginRight: "10px" }}>GST Value:</Text>
-                                                                        <Text style={{ textAlign: "right" }}>
-                                                                                {taxableAmount.toFixed(2)}
-                                                                        </Text>
-                                                                </View>
-
-                                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
-                                                                        <Text style={{ marginRight: "10px" }}>CGST @1.50%:</Text>
-                                                                        <Text style={{ textAlign: "right" }}>
-                                                                                {(taxAmount / 2).toFixed(2)}
-                                                                        </Text>
-                                                                </View>
-                                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
-                                                                        <Text style={{ marginRight: "10px" }}>SGST @1.50%:</Text>
-                                                                        <Text style={{ textAlign: "right" }}>
-                                                                                {(taxAmount / 2).toFixed(2)}
-                                                                        </Text>
-                                                                </View>
-
-                                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
-                                                                        <Text style={{ marginRight: "10px" }} >Net Bill Value: </Text>
-                                                                        <Text style={{ textAlign: "right" }}>
-                                                                                {/* {(totalValues.rateAmount + totalValues.makingCharges + totalValues.stonePrice + taxAmount).toFixed(2)} */}
-                                                                                {netAmount.toFixed(2)}
-                                                                        </Text>
-
-                                                                </View>
-
-                                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
-                                                                        <Text style={{ marginRight: "10px" }}>(-) OLD:</Text>
-                                                                        <Text style={{ textAlign: "right" }}>{oldItemsAmount.toFixed(2)}</Text>
-                                                                </View>
-                                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
-                                                                        <Text style={{ marginRight: "10px" }}>(-) SCHEME:</Text>
-                                                                        <Text style={{ textAlign: "right" }}>{schemeAmount.toFixed(2)}</Text>
-                                                                </View>
-                                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
-                                                                        <Text style={{ marginRight: "10px" }}>(-) SALE RETURN:</Text>
-                                                                        <Text style={{ textAlign: "right" }}>{salesNetAmount.toFixed(2)}</Text>
-                                                                </View>
-                                                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
-                                                                        <Text style={{ marginRight: "10px" }}>Net Amount:</Text>
-                                                                        <Text style={{ textAlign: "right" }}>
-                                                                                {Math.round(netPayableAmount).toFixed(2)}
-                                                                        </Text>
-                                                                </View>
-
-
-                                                        </View>
-
-
                                                 </View>
+
                                                 <View style={{ alignItems: "center", fontFamily: 'Times-Bold', marginTop: 10 }}>
                                                         <Text>
                                                                 (Rupees {netBillValueInWords} Only)
@@ -755,40 +801,31 @@ const TaxINVoiceReceipt = ({
                                                 <View style={{ flexDirection: "row", marginTop: 20, justifyContent: "space-between", marginBottom: 3, fontFamily: 'Times-Bold' }}>
                                                         {/* Left Side */}
                                                         <View style={{ alignItems: "flex-start", paddingLeft: 10 }}>
-                                                                <Text style={[styles.bold]}>For Customer</Text>
+                                                                <Text>For Customer</Text>
                                                         </View>
 
                                                         {/* Right Side */}
                                                         <View style={{ alignItems: "flex-end", paddingRight: 10 }}>
-                                                                <Text style={[styles.bold]}>For {company?.company_name?.toUpperCase() || ""}</Text>
+                                                                <Text>For {company?.company_name?.toUpperCase() || ""}</Text>
                                                         </View>
-
                                                 </View>
 
                                                 <View
                                                         style={{
                                                                 flexDirection: "row",
-                                                                justifyContent: "center", // horizontal center
-                                                                alignItems: "center",     // vertical center
+                                                                justifyContent: "center",
+                                                                alignItems: "center",
                                                         }}
                                                 >
                                                         {qrCodeUrl && (
                                                                 <Image
-                                                                        source={{ uri: qrCodeUrl }}   // ✅ React Native uses source, not src
+                                                                        source={{ uri: qrCodeUrl }}
                                                                         style={styles.qrCode}
                                                                 />
                                                         )}
                                                 </View>
-
-
-
-
-
                                         </View>
-
                                 </View>
-
-
                         </Page>
                 </Document>
         );
