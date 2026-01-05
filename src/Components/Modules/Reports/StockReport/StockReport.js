@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Row, Col } from 'react-bootstrap';
-import DataTable from '../../../Pages/InputField/DataTable'; // Import the reusable DataTable component
+import React, { useEffect, useState, useMemo } from 'react';
+import { Row, Col, Button } from 'react-bootstrap';
+import DataTable from '../../../Pages/InputField/DataTable';
 import baseURL from "../../../../Url/NodeBaseURL";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { FaFileExcel } from 'react-icons/fa';
 
 const StockReport = () => {
-    const [data, setData] = useState([]); // State to store table data
-    const [loading, setLoading] = useState(true); // Loading state
+    const [data, setData] = useState([]);
 
-    // Fetch data from the API
     useEffect(() => {
         fetch(`${baseURL}/get/opening-tags-entry`)
             .then((response) => {
@@ -17,19 +18,69 @@ const StockReport = () => {
                 return response.json();
             })
             .then((data) => {
-                setData(data.result);
+                setData(data.result || []);
             })
             .catch((error) => {
                 console.error('Error fetching stock entries:', error);
             });
     }, []);
 
-    // Define columns for the table
-    const columns = React.useMemo(
+    /* ===============================
+       EXCEL DOWNLOAD FUNCTION
+    =============================== */
+    const handleDownloadExcel = () => {
+        if (!data.length) return;
+
+        const formattedData = data.map((item, index) => ({
+            "S No": index + 1,
+            "Date": item.date
+                ? new Date(item.date).toLocaleDateString("en-GB")
+                : "",
+            "Category": item.category,
+            "Sub Category": item.sub_category,
+            "Product Design Name": item.design_master,
+            "Barcode": item.PCode_BarCode,
+            "Gross Wt": item.Gross_Weight,
+            "Net Wt": item.TotalWeight_AW,
+            "MC": item.Making_Charges,
+            "Rate": item.rate,
+            "Total Amount": item.total_price,
+            "Status": item.Status
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(formattedData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Stock Report");
+
+        const excelBuffer = XLSX.write(workbook, {
+            bookType: "xlsx",
+            type: "array",
+        });
+
+        const blob = new Blob([excelBuffer], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+
+        /* ===== FILE NAME FORMAT yyyy-mm-dd ===== */
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+
+        const fileName = `Stock_Report_${yyyy}-${mm}-${dd}.xlsx`;
+
+        saveAs(blob, fileName);
+    };
+
+
+    /* ===============================
+       TABLE COLUMNS
+    =============================== */
+    const columns = useMemo(
         () => [
             {
                 Header: 'S No.',
-                Cell: ({ row }) => row.index + 1, // Generate a sequential number based on the row index
+                Cell: ({ row }) => row.index + 1,
             },
             {
                 Header: 'Date',
@@ -37,10 +88,7 @@ const StockReport = () => {
                 Cell: ({ value }) => {
                     if (!value) return "";
                     const date = new Date(value);
-                    const day = String(date.getDate()).padStart(2, "0");
-                    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
-                    const year = date.getFullYear();
-                    return `${day}-${month}-${year}`;
+                    return date.toLocaleDateString("en-GB");
                 }
             },
             { Header: 'Category', accessor: 'category' },
@@ -48,24 +96,23 @@ const StockReport = () => {
             { Header: 'Product Design Name', accessor: 'design_master' },
             { Header: 'Barcode', accessor: 'PCode_BarCode' },
             { Header: 'Gross Wt', accessor: 'Gross_Weight' },
-            // { Header: 'Stones Wt', accessor: 'Stones_Weight' },
-            // { Header: 'Wasatage%', accessor: 'Wastage_Percentage' },
             { Header: 'Net Wt', accessor: 'TotalWeight_AW' },
             { Header: 'MC', accessor: 'Making_Charges' },
             { Header: 'Rate', accessor: 'rate' },
             { Header: 'Total Amt', accessor: 'total_price' },
             { Header: 'Status', accessor: 'Status' },
             {
-                Header: "Barcode",
-                Cell: ({ row }) =>
+                Header: "Barcode PDF",
+                Cell: ({ row }) => (
                     <a
-                        href={`${baseURL}/invoices/${row.original.PCode_BarCode}.pdf`} // Fetch from backend
+                        href={`${baseURL}/invoices/${row.original.PCode_BarCode}.pdf`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{ textDecoration: 'none' }}
                     >
                         📝 View
                     </a>
+                )
             },
         ],
         []
@@ -77,9 +124,18 @@ const StockReport = () => {
                 <Row className="mb-3">
                     <Col className="d-flex justify-content-between align-items-center">
                         <h3>Stock Report</h3>
+                         <Button
+                            variant="success"
+                            onClick={handleDownloadExcel}
+                            className="d-flex align-items-center gap-2"
+                        >
+                            <FaFileExcel />
+                            Download Excel
+                        </Button>
                     </Col>
                 </Row>
-                    <DataTable columns={columns} data={[...data].reverse()} /> 
+
+                <DataTable columns={columns} data={[...data].reverse()} />
             </div>
         </div>
     );

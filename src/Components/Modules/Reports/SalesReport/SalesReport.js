@@ -6,6 +6,10 @@ import { Button, Row, Col, Modal, Table } from 'react-bootstrap';
 import axios from 'axios';
 import baseURL from '../../../../Url/NodeBaseURL';
 import './SalesReport.css';
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { FaFileExcel } from "react-icons/fa";
+
 
 const RepairsTable = () => {
   const navigate = useNavigate();
@@ -13,6 +17,59 @@ const RepairsTable = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [repairDetails, setRepairDetails] = useState(null);
+
+  const handleDownloadExcel = () => {
+    if (!data.length) return;
+
+    const formattedData = data.map((item, index) => {
+      const paid_amt = Number(item.paid_amt) || 0;
+      const receipts_amt = Number(item.receipts_amt) || 0;
+      const totalPaid = (paid_amt + receipts_amt).toFixed(2);
+
+      const bal_amt = Number(item.bal_amt) || 0;
+      const bal_after_receipts = Number(item.bal_after_receipts) || 0;
+      const finalBalance =
+        bal_amt === receipts_amt
+          ? bal_after_receipts || 0
+          : bal_after_receipts || bal_amt || 0;
+
+      return {
+        "Sr No": index + 1,
+        "Date": item.date ? formatDate(item.date) : "",
+        "Mobile": item.mobile,
+        "Invoice No": item.invoice_number,
+        "Account Name": item.account_name,
+        "Total Amount": item.net_amount || 0,
+        "Old Amount": item.old_exchange_amt || 0,
+        "Scheme Amount": item.scheme_amt || 0,
+        "Net Bill Amount": item.net_bill_amount || 0,
+        "Paid Amount": totalPaid,
+        "Balance Amount": finalBalance.toFixed(2)
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(formattedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sales Report");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    /* ===== FILE NAME yyyy-mm-dd ===== */
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+
+    saveAs(blob, `Sales_Report_${yyyy}-${mm}-${dd}.xlsx`);
+  };
+
 
   // Columns for the DataTable
   const columns = React.useMemo(
@@ -64,7 +121,7 @@ const RepairsTable = () => {
         Cell: ({ row }) => {
           const paid_amt = Number(row.original.paid_amt) || 0;
           const receipts_amt = Number(row.original.receipts_amt) || 0;
-          const totalPaid = (paid_amt + receipts_amt).toFixed(2);      
+          const totalPaid = (paid_amt + receipts_amt).toFixed(2);
           return totalPaid;
         },
       },
@@ -74,13 +131,13 @@ const RepairsTable = () => {
         Cell: ({ row }) => {
           const bal_amt = Number(row.original.bal_amt) || 0;
           const bal_after_receipts = Number(row.original.bal_after_receipts) || 0;
-          const receipts_amt = Number(row.original.receipts_amt) || 0;      
+          const receipts_amt = Number(row.original.receipts_amt) || 0;
           let finalBalance;
           if (bal_amt === receipts_amt) {
             finalBalance = bal_after_receipts || 0;
           } else {
             finalBalance = bal_after_receipts ? bal_after_receipts : bal_amt || 0;
-          }      
+          }
           return finalBalance.toFixed(2);
         },
       },
@@ -89,14 +146,6 @@ const RepairsTable = () => {
         accessor: 'actions',
         Cell: ({ row }) => (
           <div>
-            {/* <FaEdit
-              style={{ cursor: 'pointer', marginRight: '10px', color: 'blue' }}
-              onClick={() => handleEdit(row.original.id)}
-            />
-            <FaTrash
-              style={{ cursor: 'pointer', color: 'red' }}
-              onClick={() => handleDelete(row.original.id)}
-            /> */}
             <FaEye
               style={{ cursor: 'pointer', marginLeft: '10px', color: 'green' }}
               onClick={() => handleViewDetails(row.original.invoice_number)} // Pass invoice_number
@@ -125,7 +174,7 @@ const RepairsTable = () => {
 
         // Filter the data based on the 'transaction_status' column
         const filteredData = response.data.filter(
-           (item) => item.transaction_status === 'Sales' || item.transaction_status === "ConvertedInvoice"
+          (item) => item.transaction_status === 'Sales' || item.transaction_status === "ConvertedInvoice"
         );
 
         setData(filteredData); // Set the filtered data
@@ -174,15 +223,18 @@ const RepairsTable = () => {
         <Row className="mb-3">
           <Col className="d-flex justify-content-between align-items-center">
             <h3>Sales Report</h3>
-            {/* <Button
-              className="create_but"
-              onClick={handleCreate}
-              style={{ backgroundColor: '#a36e29', borderColor: '#a36e29' }}
+
+            <Button
+              variant="success"
+              onClick={handleDownloadExcel}
+              className="d-flex align-items-center gap-2"
             >
-              + Create
-            </Button> */}
+              <FaFileExcel />
+              Download Excel
+            </Button>
           </Col>
         </Row>
+
         {loading ? (
           <p>Loading...</p>
         ) : (
@@ -195,7 +247,7 @@ const RepairsTable = () => {
         <Modal.Header closeButton>
           <Modal.Title>Sales Details</Modal.Title>
         </Modal.Header>
-        <Modal.Body style={{ fontSize:'13px' }}>
+        <Modal.Body style={{ fontSize: '13px' }}>
           {repairDetails && (
             <>
               <h5>Customer Info</h5>
@@ -235,7 +287,7 @@ const RepairsTable = () => {
               <h5>Products</h5>
               <div className="table-responsive">
                 <Table bordered>
-                  <thead style={{ whiteSpace: 'nowrap', fontSize:'13px' }}>
+                  <thead style={{ whiteSpace: 'nowrap', fontSize: '13px' }}>
                     <tr>
                       <th>BarCode</th>
                       <th>Product Name</th>
@@ -251,7 +303,7 @@ const RepairsTable = () => {
                       <th>Total Price</th>
                     </tr>
                   </thead>
-                  <tbody style={{ whiteSpace: 'nowrap', fontSize:'13px' }}>
+                  <tbody style={{ whiteSpace: 'nowrap', fontSize: '13px' }}>
                     {repairDetails.repeatedData.map((product, index) => (
                       <tr key={index}>
                         <td>{product.code}</td>

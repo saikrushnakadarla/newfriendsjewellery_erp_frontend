@@ -5,6 +5,10 @@ import { FaEdit, FaTrash, FaEye, FaChevronDown, FaChevronRight } from 'react-ico
 import { Button, Row, Col, Modal, Table } from 'react-bootstrap';
 import axios from 'axios';
 import baseURL from '../../../../Url/NodeBaseURL';
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { FaFileExcel } from "react-icons/fa";
+
 
 const RepairsTable = () => {
     const navigate = useNavigate();
@@ -38,7 +42,7 @@ const RepairsTable = () => {
             acc[key].invoices.push(item);
             return acc;
         }, {});
-    
+
         // Sort invoices by balance within each customer group
         Object.values(grouped).forEach(customer => {
             customer.invoices.sort((a, b) => {
@@ -46,22 +50,78 @@ const RepairsTable = () => {
                     const bal_amt = Number(invoice.bal_amt) || 0;
                     const bal_after_receipts = Number(invoice.bal_after_receipts) || 0;
                     const receipts_amt = Number(invoice.receipts_amt) || 0;
-    
+
                     if (bal_amt === receipts_amt) {
                         return bal_after_receipts || 0;
                     }
                     return bal_after_receipts ? bal_after_receipts : bal_amt || 0;
                 };
-    
+
                 const balanceA = calculateInvoiceBalance(a);
                 const balanceB = calculateInvoiceBalance(b);
                 return balanceB - balanceA; // Descending order
             });
         });
-    
+
         return grouped;
     };
-    
+
+    const handleDownloadExcel = () => {
+        if (!groupedData.length) return;
+
+        const excelData = [];
+
+        groupedData.forEach((customer, cIndex) => {
+            customer.invoices.forEach((invoice, iIndex) => {
+                const bal_amt = Number(invoice.bal_amt) || 0;
+                const bal_after_receipts = Number(invoice.bal_after_receipts) || 0;
+                const receipts_amt = Number(invoice.receipts_amt) || 0;
+
+                let finalBalance = 0;
+                if (bal_amt === receipts_amt) {
+                    finalBalance = bal_after_receipts || 0;
+                } else {
+                    finalBalance = bal_after_receipts ? bal_after_receipts : bal_amt || 0;
+                }
+
+                excelData.push({
+                    "S No": excelData.length + 1,
+                    "Account Name": customer.account_name,
+                    "Mobile": customer.mobile,
+                    "Email": customer.email,
+                    "Invoice No": invoice.invoice_number,
+                    "Invoice Date": invoice.date
+                        ? new Date(invoice.date).toLocaleDateString("en-GB")
+                        : "",
+                    "Net Amount": invoice.net_bill_amount || 0,
+                    "Paid Amount":
+                        (Number(invoice.paid_amt) || 0) +
+                        (Number(invoice.receipts_amt) || 0),
+                    "Balance Amount": finalBalance.toFixed(2),
+                });
+            });
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Sales Report");
+
+        const excelBuffer = XLSX.write(workbook, {
+            bookType: "xlsx",
+            type: "array",
+        });
+
+        const blob = new Blob([excelBuffer], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+
+        saveAs(blob, `Sales_Report_${yyyy}-${mm}-${dd}.xlsx`);
+    };
 
 
     const columns = React.useMemo(
@@ -289,21 +349,21 @@ const RepairsTable = () => {
                     const bal_amt = Number(invoice.bal_amt) || 0;
                     const bal_after_receipts = Number(invoice.bal_after_receipts) || 0;
                     const receipts_amt = Number(invoice.receipts_amt) || 0;
-    
+
                     let balance = 0;
                     if (bal_amt === receipts_amt) {
                         balance = bal_after_receipts || 0;
                     } else {
                         balance = bal_after_receipts ? bal_after_receipts : bal_amt || 0;
                     }
-    
+
                     return sum + balance;
                 }, 0);
             };
-    
+
             const balanceA = calculateBalance(a.invoices || []);
             const balanceB = calculateBalance(b.invoices || []);
-            
+
             return balanceB - balanceA; // For descending order
         });
     }, [data]);
@@ -314,8 +374,18 @@ const RepairsTable = () => {
                 <Row className="mb-3">
                     <Col className="d-flex justify-content-between align-items-center">
                         <h3>Sales Report</h3>
+
+                        <Button
+                            variant="success"
+                            onClick={handleDownloadExcel}
+                            className="d-flex align-items-center gap-2"
+                        >
+                            <FaFileExcel />
+                            Download Excel
+                        </Button>
                     </Col>
                 </Row>
+
                 {loading ? (
                     <p>Loading...</p>
                 ) : (
@@ -374,7 +444,7 @@ const RepairsTable = () => {
                 <Modal.Header closeButton>
                     <Modal.Title>Sales Details</Modal.Title>
                 </Modal.Header>
-                <Modal.Body style={{ fontSize:'13px' }}>
+                <Modal.Body style={{ fontSize: '13px' }}>
                     {repairDetails && (
                         <>
                             <h5>Customer Info</h5>

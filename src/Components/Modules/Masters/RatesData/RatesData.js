@@ -4,6 +4,11 @@ import DataTable from '../../../Pages/InputField/DataTable'; // Import the reusa
 import { Row, Col } from 'react-bootstrap';
 import { format } from 'date-fns'; // Import date-fns for date formatting
 import baseURL from "../../../../Url/NodeBaseURL";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { Button } from "react-bootstrap";
+import { FaFileExcel } from "react-icons/fa";
+
 
 const RepairsTable = () => {
   const navigate = useNavigate();
@@ -19,7 +24,7 @@ const RepairsTable = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const result = await response.json();
-        
+
         // Map rate_date to date before passing to DataTable
         const modifiedData = result.map(item => ({
           ...item,
@@ -36,6 +41,41 @@ const RepairsTable = () => {
 
     fetchData();
   }, []);
+
+  const handleDownloadExcel = () => {
+    if (!data.length) return;
+
+    const excelData = data.map((row, index) => ({
+      "S No": index + 1,
+      "Date": row.date ? new Date(row.date).toLocaleDateString("en-GB") : "",
+      "16 Crt": row.rate_16crt,
+      "18 Crt": row.rate_18crt,
+      "22 Crt": row.rate_22crt,
+      "24 Crt": row.rate_24crt,
+      "Silver": row.silver_rate,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Rates Report");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+
+    saveAs(blob, `Rates_Report_${yyyy}-${mm}-${dd}.xlsx`);
+  };
+
 
   const columns = React.useMemo(
     () => [
@@ -81,8 +121,18 @@ const RepairsTable = () => {
         <Row className="mb-3">
           <Col className="d-flex justify-content-between align-items-center">
             <h3>Rates</h3>
+
+            <Button
+              variant="success"
+              onClick={handleDownloadExcel}
+              className="d-flex align-items-center gap-2"
+            >
+              <FaFileExcel />
+              Download Excel
+            </Button>
           </Col>
         </Row>
+
         {loading ? (
           <div>Loading...</div> // Loading indicator
         ) : (

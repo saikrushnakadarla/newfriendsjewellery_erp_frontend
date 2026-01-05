@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import DataTable from './ExpandedTable';
 import baseURL from "../../../../Url/NodeBaseURL";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { Button } from "react-bootstrap";
+import { FaFileExcel } from "react-icons/fa";
+
 
 const RepairsTable = () => {
   const [data, setData] = useState([]);
@@ -70,6 +75,66 @@ const RepairsTable = () => {
 
     fetchData();
   }, []);
+
+  const handleDownloadExcel = () => {
+    if (!data.length) return;
+
+    /* =========================
+       SHEET 1: SUMMARY (Grouped)
+    ========================= */
+    const summaryData = data.map((item, index) => ({
+      "S No": index + 1,
+      "Mobile": item.mobile,
+      "Account Name": item.account_name,
+      "Total Invoices": item.invoices.length,
+      "Total Amount": item.totalRateCut.toFixed(2),
+      "Balance Amount": item.totalBalance.toFixed(2),
+    }));
+
+    /* =========================
+       SHEET 2: INVOICE DETAILS
+    ========================= */
+    const invoiceDetails = [];
+
+    data.forEach((item) => {
+      item.invoices.forEach((inv) => {
+        invoiceDetails.push({
+          "Account Name": item.account_name,
+          "Mobile": item.mobile,
+          "Invoice No": inv.invoice,
+          "Date": inv.date ? formatDate(inv.date) : "",
+          "Total Amount": Number(inv.totalRateCut || 0).toFixed(2),
+          "Balance Amount": Number(inv.totalBalance || 0).toFixed(2),
+        });
+      });
+    });
+
+    const workbook = XLSX.utils.book_new();
+
+    const summarySheet = XLSX.utils.json_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, "Supplier Summary");
+
+    const invoiceSheet = XLSX.utils.json_to_sheet(invoiceDetails);
+    XLSX.utils.book_append_sheet(workbook, invoiceSheet, "Invoice Details");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    /* ===== File name yyyy-mm-dd ===== */
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+
+    saveAs(blob, `Purchase_Supplier_Balance_${yyyy}-${mm}-${dd}.xlsx`);
+  };
+
 
   const columns = React.useMemo(() => [
     {
@@ -157,9 +222,19 @@ const RepairsTable = () => {
       <div className="payments-table-container">
         <Row className="mb-3">
           <Col className="d-flex justify-content-between align-items-center">
-            <h3>Purchase/Suplier Balance</h3>
+            <h3>Purchase / Supplier Balance</h3>
+
+            <Button
+              variant="success"
+              onClick={handleDownloadExcel}
+              className="d-flex align-items-center gap-2"
+            >
+              <FaFileExcel />
+              Download Excel
+            </Button>
           </Col>
         </Row>
+
         {loading ? (
           <div>Loading...</div>
         ) : (

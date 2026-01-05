@@ -7,6 +7,10 @@ import axios from 'axios';
 // import TagEntry from "./TagEntry";
 import baseURL from '../../../../Url/NodeBaseURL';
 import Swal from 'sweetalert2';
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { FaFileExcel } from "react-icons/fa";
+
 
 const RepairsTable = () => {
   const navigate = useNavigate();
@@ -24,6 +28,44 @@ const RepairsTable = () => {
   useEffect(() => {
     fetchPurchases();
   }, []);
+
+  const handleDownloadExcel = () => {
+    if (!data.length) return;
+
+    const formattedData = data.map((item, index) => ({
+      "Sr No": index + 1,
+      "Date": item.date ? formatDate(item.date) : "",
+      "Mobile Number": item.mobile,
+      "Invoice No": item.invoice,
+      "Account Name": item.account_name,
+      "Taxable Amount": item.overall_taxableAmt || 0,
+      "Tax Amount": item.overall_taxAmt || 0,
+      "Final Amount": item.overall_netAmt || 0,
+      "HM Charges": item.overall_hmCharges || 0
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(formattedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Purchase Report");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    /* ===== File name: Purchase_Report_yyyy-mm-dd ===== */
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+
+    saveAs(blob, `Purchase_Report_${yyyy}-${mm}-${dd}.xlsx`);
+  };
+
 
   const columns = React.useMemo(
     () => [
@@ -536,91 +578,98 @@ const RepairsTable = () => {
       <div className="payments-table-container">
         <Row className="mb-3">
           <Col className="d-flex justify-content-between align-items-center">
-            <h3>Purchase</h3>
-            {/* <Button  className='create_but' onClick={handleCreate} style={{ backgroundColor: '#a36e29', borderColor: '#a36e29' }}>
-              + Create
-            </Button> */}
+            <h3>Purchase Report</h3>
+
+            <Button
+              variant="success"
+              onClick={handleDownloadExcel}
+              className="d-flex align-items-center gap-2"
+            >
+              <FaFileExcel />
+              Download Excel
+            </Button>
           </Col>
         </Row>
+
         <DataTable columns={columns} data={data} initialSearchValue={initialSearchValue} expandedRows={expandedRows} toggleRowExpansion={toggleRowExpansion} />
       </div>
       <Modal show={showModal} onHide={handleCloseModal} size="xl" className="m-auto">
-              <Modal.Header closeButton>
-                <Modal.Title>Purchase Details</Modal.Title>
-              </Modal.Header>
-              <Modal.Body style={{ fontSize:'13px' }}>
-                {purchaseDetails && (
-                  <>
-                    <h5>Customer Info</h5>
-                    <Table bordered>
-                      <tbody>
-                        <tr>
-                          <td>Bill Date</td>
-                          <td>{new Date(purchaseDetails.uniqueData.date).toLocaleDateString('en-GB')}</td>
-                        </tr>
-                        <tr>
-                          <td>Mobile</td>
-                          <td>{purchaseDetails.uniqueData.mobile}</td>
-                        </tr>
-                        <tr>
-                          <td>Account Name</td>
-                          <td>{purchaseDetails.uniqueData.account_name}</td>
-                        </tr>
-                        <tr>
-                          <td>GST Number</td>
-                          <td>{purchaseDetails.uniqueData.gst_in}</td>
-                        </tr>
-                        <tr>
-                          <td>Invoice Number</td>
-                          <td>{purchaseDetails.uniqueData.invoice}</td>
-                        </tr>
-                      </tbody>
-                    </Table>
-      
-                    <h5>Products</h5>
-                    <div className="table-responsive">
-                      <Table bordered>
-                        <thead style={{ whiteSpace: 'nowrap' }}>
-                          <tr>
-                            <th>Category</th>
-                            <th>Purity</th>
-                            <th>Pcs</th>
-                            <th>Gross Wt</th>
-                            <th>Stone Wt</th>
-                            <th>W.Wt</th>
-                            <th>Total Wt</th>
-                            <th>Paid Wt</th>
-                            <th>Bal Wt</th>
-                          </tr>
-                        </thead>
-                        <tbody style={{ whiteSpace: 'nowrap' }}>
-                          {purchaseDetails.repeatedData.map((product, index) => (
-                            <tr key={index}>
-                              <td>{product.category}</td>
-                              <td>{product.purity}</td>
-                              <td>{product.pcs}</td>
-                              <td>{product.gross_weight}</td>
-                              <td>{product.stone_weight}</td>
-                              <td>{product.wastage_wt}</td>
-                              <td>{product.total_pure_wt}</td>
-                              <td>{product.paid_pure_weight}</td>
-                              <td>{product.balance_pure_weight}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
-                    </div>
-                  </>
-                )}
-              </Modal.Body>
-              <Modal.Footer>
-                <Button variant="secondary" onClick={handleCloseModal}>
-                  Close
-                </Button>
-              </Modal.Footer>
-            </Modal>
-      
-            {/* <Modal
+        <Modal.Header closeButton>
+          <Modal.Title>Purchase Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ fontSize: '13px' }}>
+          {purchaseDetails && (
+            <>
+              <h5>Customer Info</h5>
+              <Table bordered>
+                <tbody>
+                  <tr>
+                    <td>Bill Date</td>
+                    <td>{new Date(purchaseDetails.uniqueData.date).toLocaleDateString('en-GB')}</td>
+                  </tr>
+                  <tr>
+                    <td>Mobile</td>
+                    <td>{purchaseDetails.uniqueData.mobile}</td>
+                  </tr>
+                  <tr>
+                    <td>Account Name</td>
+                    <td>{purchaseDetails.uniqueData.account_name}</td>
+                  </tr>
+                  <tr>
+                    <td>GST Number</td>
+                    <td>{purchaseDetails.uniqueData.gst_in}</td>
+                  </tr>
+                  <tr>
+                    <td>Invoice Number</td>
+                    <td>{purchaseDetails.uniqueData.invoice}</td>
+                  </tr>
+                </tbody>
+              </Table>
+
+              <h5>Products</h5>
+              <div className="table-responsive">
+                <Table bordered>
+                  <thead style={{ whiteSpace: 'nowrap' }}>
+                    <tr>
+                      <th>Category</th>
+                      <th>Purity</th>
+                      <th>Pcs</th>
+                      <th>Gross Wt</th>
+                      <th>Stone Wt</th>
+                      <th>W.Wt</th>
+                      <th>Total Wt</th>
+                      <th>Paid Wt</th>
+                      <th>Bal Wt</th>
+                    </tr>
+                  </thead>
+                  <tbody style={{ whiteSpace: 'nowrap' }}>
+                    {purchaseDetails.repeatedData.map((product, index) => (
+                      <tr key={index}>
+                        <td>{product.category}</td>
+                        <td>{product.purity}</td>
+                        <td>{product.pcs}</td>
+                        <td>{product.gross_weight}</td>
+                        <td>{product.stone_weight}</td>
+                        <td>{product.wastage_wt}</td>
+                        <td>{product.total_pure_wt}</td>
+                        <td>{product.paid_pure_weight}</td>
+                        <td>{product.balance_pure_weight}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* <Modal
               show={showTagModal}
               onHide={handleCloseTagModal}
               size="lg"

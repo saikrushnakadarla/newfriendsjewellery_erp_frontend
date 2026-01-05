@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import DataTable from '../../../Pages/InputField/DataTable'; // Import the reusable DataTable component
 import { Button, Row, Col } from 'react-bootstrap';
 import baseURL from "../../../../Url/NodeBaseURL";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { FaFileExcel } from "react-icons/fa";
+
 
 const RepairsTable = () => {
   const [data, setData] = useState([]); // State to store table data
@@ -27,6 +31,47 @@ const RepairsTable = () => {
 
     fetchData();
   }, []);
+
+  const handleDownloadExcel = () => {
+    if (!data.length) return;
+
+    const excelData = [...data].reverse().map((row, index) => ({
+      "Sr No": index + 1,
+      "Name": row.account_name,
+      "Mobile": row.mobile,
+      "Date": row.date ? new Date(row.date).toLocaleDateString("en-GB") : "",
+      "Purchase No": row.urdpurchase_number,
+      "Product Name": row.product_name,
+      "Metal": row.metal,
+      "Gross Weight": row.gross,
+      "Dust Weight": row.dust,
+      "ML Percent": row.ml_percent,
+      "Net Weight": row.eqt_wt,
+      "Rate": row.rate,
+      "Total Amount": row.total_amount,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "URD Purchase Report");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+
+    saveAs(blob, `URD_Purchase_Report_${yyyy}-${mm}-${dd}.xlsx`);
+  };
+
 
   // Columns definition for the DataTable
   const columns = React.useMemo(
@@ -110,8 +155,18 @@ const RepairsTable = () => {
         <Row className="mb-3">
           <Col className="d-flex justify-content-between align-items-center">
             <h3>URD Purchase Report</h3>
+
+            <Button
+              variant="success"
+              onClick={handleDownloadExcel}
+              className="d-flex align-items-center gap-2"
+            >
+              <FaFileExcel />
+              Download Excel
+            </Button>
           </Col>
         </Row>
+
         {loading ? (
           <div>Loading...</div> // Show loading state while fetching
         ) : (
