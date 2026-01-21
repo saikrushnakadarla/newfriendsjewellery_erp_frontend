@@ -361,6 +361,7 @@ const TaxINVoiceReceipt = ({
                                 makingCharges: totals.makingCharges + Number(item.making_charges || 0),
                                 stonePrice: totals.stonePrice + Number(item.stone_price || 0),
                                 rateAmount: totals.rateAmount + Number(item.rate_amt || 0),
+                                hmCharges : totals.hmCharges + Number(item.hm_charges || 0),
                         };
                 },
                 {
@@ -372,6 +373,7 @@ const TaxINVoiceReceipt = ({
                         makingCharges: 0,
                         stonePrice: 0,
                         rateAmount: 0,
+                        hmCharges:0,
                 }
         );
 
@@ -589,7 +591,7 @@ const TaxINVoiceReceipt = ({
                                                                                         <View style={[styles.divider1, { marginTop: -2 }]} />
 
                                                                                         <Text style={[styles.tableCell, styles.tableCellTotal]}>
-                                                                                                {(parseFloat(item.rate_amt || 0) + parseFloat(item.stone_price || 0) + parseFloat(item.making_charges || 0)).toFixed(2) || "0.00"}
+                                                                                                {(parseFloat(item.rate_amt || 0) + parseFloat(item.stone_price || 0) + parseFloat(item.making_charges || 0) + parseFloat(item.hm_charges || 0)).toFixed(2) || "0.00"}
                                                                                         </Text>
                                                                                 </View>
                                                                         );
@@ -689,7 +691,7 @@ const TaxINVoiceReceipt = ({
                                                         <View style={[styles.divider1, { marginTop: -2 }]} />
 
                                                         <Text style={[styles.tableCell, styles.tableCellTotal, styles.lastheight]}>
-                                                                {(totalValues.rateAmount + totalValues.makingCharges + totalValues.stonePrice).toFixed(2)}
+                                                                {(totalValues.rateAmount + totalValues.makingCharges + totalValues.stonePrice + totalValues.hmCharges).toFixed(2)}
                                                         </Text>
                                                 </View>
 
@@ -757,6 +759,10 @@ const TaxINVoiceReceipt = ({
                                                                                 <Text>{festivalDiscountAmt.toFixed(2)}</Text>
                                                                         </View>
                                                                         <View style={styles.summaryItem}>
+                                                                                <Text>(-) OLD:</Text>
+                                                                                <Text>{oldItemsAmount.toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
                                                                                 <Text>GST Value:</Text>
                                                                                 <Text>{taxableAmount.toFixed(2)}</Text>
                                                                         </View>
@@ -772,10 +778,7 @@ const TaxINVoiceReceipt = ({
                                                                                 <Text>Net Bill Value:</Text>
                                                                                 <Text>{netAmount.toFixed(2)}</Text>
                                                                         </View>
-                                                                        <View style={styles.summaryItem}>
-                                                                                <Text>(-) OLD:</Text>
-                                                                                <Text>{oldItemsAmount.toFixed(2)}</Text>
-                                                                        </View>
+                                                                        
                                                                         <View style={styles.summaryItem}>
                                                                                 <Text>(-) SCHEME:</Text>
                                                                                 <Text>{schemeAmount.toFixed(2)}</Text>

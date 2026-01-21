@@ -43,8 +43,8 @@ const ProductTable = ({ repairDetails, onDelete, onEdit }) => {
             <th>MC</th>
             <th>Discount</th>
             <th>Fest Discount</th>
-            <th>Tax %</th>
-            <th>Tax Amt</th>
+            {/* <th>Tax %</th>
+            <th>Tax Amt</th> */}
             <th>Total Price</th>
             <th>Image</th>
             <th>Status</th>
@@ -74,8 +74,8 @@ const ProductTable = ({ repairDetails, onDelete, onEdit }) => {
                 <td>{detail.making_charges}</td>
                 <td>{detail.disscount}</td>
                 <td>{detail.festival_discount}</td>
-                <td>{detail.tax_percent}</td>
-                <td>{detail.tax_amt}</td>
+                {/* <td>{detail.tax_percent}</td>
+                <td>{detail.tax_amt}</td> */}
                 <td>{detail.total_price}</td>
                 <td>
                   {detail.imagePreview ? (

@@ -1,21 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Container, Form } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import CustomerDetails from './CustomerDetails';
-import InvoiceDetails from './InvoiceDetails';
-import ProductDetails from './ProductDetails';
-import ProductTable from './ProductTable';
-import PaymentDetails from './PaymentDetails';
-import useProductHandlers from './hooks/useProductHandlers';
-import useCalculations from './hooks/useCalculations';
-import './../Sales/SalesForm.css';
-import baseURL from './../../../../Url/NodeBaseURL';
+import React, { useState, useEffect, useRef } from "react";
+import { Container, Form } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import CustomerDetails from "./CustomerDetails";
+import InvoiceDetails from "./InvoiceDetails";
+import ProductDetails from "./ProductDetails";
+import ProductTable from "./ProductTable";
+import PaymentDetails from "./PaymentDetails";
+import useProductHandlers from "./hooks/useProductHandlers";
+import useCalculations from "./hooks/useCalculations";
+import "./../Sales/SalesForm.css";
+import baseURL from "./../../../../Url/NodeBaseURL";
 import SalesFormSection from "./SalesForm3Section";
-import { pdf } from '@react-pdf/renderer';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import PDFLayout from './TaxInvoiceA4';
-import { useLocation } from 'react-router-dom';
+import { pdf } from "@react-pdf/renderer";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import PDFLayout from "./TaxInvoiceA4";
+import { useLocation } from "react-router-dom";
 import { saveAs } from "file-saver";
 
 const SalesForm = () => {
@@ -26,22 +26,21 @@ const SalesForm = () => {
   const [metal, setMetal] = useState("");
 
   const [oldSalesData, setOldSalesData] = useState(
-    JSON.parse(localStorage.getItem('oldSalesData')) || []
+    JSON.parse(localStorage.getItem("oldSalesData")) || []
   );
 
   const [schemeSalesData, setSchemeSalesData] = useState(
-    JSON.parse(localStorage.getItem('schemeSalesData')) || []
+    JSON.parse(localStorage.getItem("schemeSalesData")) || []
   );
 
   // Save to localStorage whenever data changes
   useEffect(() => {
-    localStorage.setItem('oldSalesData', JSON.stringify(oldSalesData));
+    localStorage.setItem("oldSalesData", JSON.stringify(oldSalesData));
   }, [oldSalesData]);
 
   useEffect(() => {
-    localStorage.setItem('schemeSalesData', JSON.stringify(schemeSalesData));
+    localStorage.setItem("schemeSalesData", JSON.stringify(schemeSalesData));
   }, [schemeSalesData]);
-
 
   // const [paymentDetails, setPaymentDetails] = useState(
   //   JSON.parse(localStorage.getItem('paymentDetails')) || {
@@ -93,7 +92,7 @@ const SalesForm = () => {
     tabId,
     isTotalPriceCleared,
     setIsTotalPriceCleared,
-    manualTotalPriceRef
+    manualTotalPriceRef,
   } = useProductHandlers();
 
   const [repairDetails, setRepairDetails] = useState(() => {
@@ -102,7 +101,10 @@ const SalesForm = () => {
   });
 
   useEffect(() => {
-    localStorage.setItem(`repairDetails_${tabId}`, JSON.stringify(repairDetails));
+    localStorage.setItem(
+      `repairDetails_${tabId}`,
+      JSON.stringify(repairDetails)
+    );
   }, [repairDetails, tabId]);
 
   useEffect(() => {
@@ -110,13 +112,17 @@ const SalesForm = () => {
       try {
         const response = await fetch(`${baseURL}/get/account-details`);
         if (!response.ok) {
-          throw new Error('Failed to fetch customers');
+          throw new Error("Failed to fetch customers");
         }
         const result = await response.json();
-        const filteredCustomers = result.filter(item => item.account_group === 'CUSTOMERS' || item.account_group === 'SUPPLIERS');
+        const filteredCustomers = result.filter(
+          (item) =>
+            item.account_group === "CUSTOMERS" ||
+            item.account_group === "SUPPLIERS"
+        );
         setCustomers(filteredCustomers);
       } catch (error) {
-        console.error('Error fetching customers:', error);
+        console.error("Error fetching customers:", error);
       }
     };
 
@@ -128,7 +134,10 @@ const SalesForm = () => {
     const fetchLastInvoiceNumber = async () => {
       try {
         const response = await axios.get(`${baseURL}/lastInvoiceNumber`);
-        setFormData(prev => ({ ...prev, invoice_number: response.data.lastInvoiceNumber }));
+        setFormData((prev) => ({
+          ...prev,
+          invoice_number: response.data.lastInvoiceNumber,
+        }));
       } catch (error) {
         console.error("Error fetching invoice number:", error);
       }
@@ -143,8 +152,8 @@ const SalesForm = () => {
   const [invoiceDetails, setInvoiceDetails] = useState(null);
 
   const [returnData, setReturnData] = useState({
-    invoice_number: '',
-  })
+    invoice_number: "",
+  });
 
   useEffect(() => {
     // Set the default date value to the current date in dd-mm-yyyy format if not already set
@@ -160,8 +169,8 @@ const SalesForm = () => {
   // Utility function to format date as dd-mm-yyyy
   const formatDate = (date) => {
     const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0"); // Months are 0-based
     const year = d.getFullYear();
     return `${day}-${month}-${year}`;
   };
@@ -193,12 +202,16 @@ const SalesForm = () => {
   useEffect(() => {
     const fetchSales = async () => {
       try {
-        const response = await axios.get(`${baseURL}/get-unique-repair-details`);
-        const filteredData = response.data.filter(item => item.transaction_status === 'Sales');
+        const response = await axios.get(
+          `${baseURL}/get-unique-repair-details`
+        );
+        const filteredData = response.data.filter(
+          (item) => item.transaction_status === "Sales"
+        );
         setUniqueInvoice(filteredData);
         setFilteredInvoices(filteredData); // Initially, show all invoices
       } catch (error) {
-        console.error('Error fetching repair details:', error);
+        console.error("Error fetching repair details:", error);
       }
     };
 
@@ -213,13 +226,20 @@ const SalesForm = () => {
       }
 
       try {
-        const response = await axios.get(`${baseURL}/getsales/${returnData.invoice_number}`);
-        const filteredData = response.data.filter((invoice) => invoice.status !== "Sale Returned");
+        const response = await axios.get(
+          `${baseURL}/getsales/${returnData.invoice_number}`
+        );
+        const filteredData = response.data.filter(
+          (invoice) => invoice.status !== "Sale Returned"
+        );
 
         setInvoiceDetails(filteredData || []); // Ensure it's always an array
         console.log("Fetched Invoice Details:", filteredData);
       } catch (error) {
-        console.error(`Error fetching details for invoice ${returnData.invoice_number}:`, error);
+        console.error(
+          `Error fetching details for invoice ${returnData.invoice_number}:`,
+          error
+        );
         setInvoiceDetails([]); // Set empty array on error
       }
     };
@@ -228,7 +248,9 @@ const SalesForm = () => {
   }, [returnData.invoice_number]);
 
   const handleCustomerChange = (customerId) => {
-    const customer = customers.find((cust) => String(cust.account_id) === String(customerId));
+    const customer = customers.find(
+      (cust) => String(cust.account_id) === String(customerId)
+    );
 
     if (customer) {
       setFormData((prevData) => ({
@@ -291,7 +313,6 @@ const SalesForm = () => {
     localStorage.setItem(`discount_${tabId}`, discount); // Save to localStorage when discount changes
   }, [discount]);
 
-
   // const handleDiscountChange = (e) => {
   //   const discountValue = parseFloat(e.target.value) || ""; // Default to empty if invalid
 
@@ -316,7 +337,6 @@ const SalesForm = () => {
   //     const hmCharges = parseFloat(item.hm_charges) || 0;
   //     const pricingType = item.pricing;
   //     const festivalDiscount = parseFloat(item.festival_discount) || 0;
-
 
   //     let calculatedDiscount = 0;
 
@@ -370,7 +390,8 @@ const SalesForm = () => {
   // };
 
   const applyDiscountToRepairDetails = (discountValue) => {
-    const storedRepairDetails = JSON.parse(localStorage.getItem(`repairDetails_${tabId}`)) || [];
+    const storedRepairDetails =
+      JSON.parse(localStorage.getItem(`repairDetails_${tabId}`)) || [];
 
     const updatedRepairDetails = storedRepairDetails.map((item) => {
       const makingCharges = parseFloat(item.making_charges) || 0;
@@ -395,7 +416,8 @@ const SalesForm = () => {
           ? parseFloat(item.original_piece_taxable_amt)
           : pieceTaxableAmt;
 
-        const updatedPieceTaxableAmt = originalPieceTaxableAmt - calculatedDiscount - festivalDiscount;
+        const updatedPieceTaxableAmt =
+          originalPieceTaxableAmt - calculatedDiscount - festivalDiscount;
         const taxAmt = (taxPercent * updatedPieceTaxableAmt) / 100;
         const totalPrice = updatedPieceTaxableAmt + taxAmt;
 
@@ -416,7 +438,13 @@ const SalesForm = () => {
           ? parseFloat(item.original_total_price)
           : previousTotalPrice;
 
-        const totalBeforeTax = rateAmt + stonePrice + makingCharges + hmCharges - calculatedDiscount - festivalDiscount;
+        const totalBeforeTax =
+          rateAmt +
+          stonePrice +
+          makingCharges +
+          hmCharges -
+          calculatedDiscount -
+          festivalDiscount;
         const taxAmt = (totalBeforeTax * taxPercent) / 100;
         const updatedTotalPrice = totalBeforeTax + taxAmt;
 
@@ -432,7 +460,10 @@ const SalesForm = () => {
     });
 
     setRepairDetails(updatedRepairDetails);
-    localStorage.setItem(`repairDetails_${tabId}`, JSON.stringify(updatedRepairDetails));
+    localStorage.setItem(
+      `repairDetails_${tabId}`,
+      JSON.stringify(updatedRepairDetails)
+    );
   };
 
   const handleDiscountChange = (e) => {
@@ -489,7 +520,6 @@ const SalesForm = () => {
 
     fetchData();
   }, []);
-
 
   const [isAnyOfferApplied, setIsAnyOfferApplied] = useState(false);
 
@@ -644,7 +674,8 @@ const SalesForm = () => {
   // };
 
   const handleApply = (selectedOffer, offerIndex) => {
-    const storedRepairDetails = JSON.parse(localStorage.getItem(`repairDetails_${tabId}`)) || [];
+    const storedRepairDetails =
+      JSON.parse(localStorage.getItem(`repairDetails_${tabId}`)) || [];
     const currentOfferKey = `${selectedOffer._id}_${offerIndex}`;
 
     // Don't reset existing discounts - just apply to all items
@@ -662,9 +693,11 @@ const SalesForm = () => {
       const hmCharges = parseFloat(item.hm_charges) || 0;
       const grossWeight = parseFloat(item.gross_weight) || 0;
 
-      const percentageDiscount = parseFloat(selectedOffer.discount_percentage) || 0;
+      const percentageDiscount =
+        parseFloat(selectedOffer.discount_percentage) || 0;
       const rateDiscount = parseFloat(selectedOffer.discount_on_rate) || 0;
-      const fixedPercentageDiscount = parseFloat(selectedOffer.discount_percent_fixed) || 0;
+      const fixedPercentageDiscount =
+        parseFloat(selectedOffer.discount_percent_fixed) || 0;
       const weightBasedDiscount = (rateDiscount / 10) * grossWeight;
       const totalDiscountValue =
         pricingType === "By fixed"
@@ -678,7 +711,8 @@ const SalesForm = () => {
           : pieceTaxableAmt;
 
         const calculatedDiscount = (pieceTaxableAmt * totalDiscountValue) / 100;
-        const updatedPieceTaxableAmt = originalPieceTaxableAmt - calculatedDiscount - discountAmt;
+        const updatedPieceTaxableAmt =
+          originalPieceTaxableAmt - calculatedDiscount - discountAmt;
         const taxAmt = (taxPercent * updatedPieceTaxableAmt) / 100;
         const totalPrice = updatedPieceTaxableAmt + taxAmt;
 
@@ -697,7 +731,12 @@ const SalesForm = () => {
           (makingCharges * percentageDiscount) / 100 +
           (rateDiscount / 10) * grossWeight;
         const totalBeforeTax =
-          rateAmt + stonePrice + makingCharges + hmCharges - calculatedDiscount - discountAmt;
+          rateAmt +
+          stonePrice +
+          makingCharges +
+          hmCharges -
+          calculatedDiscount -
+          discountAmt;
 
         const taxAmt = (totalBeforeTax * taxPercent) / 100;
         const updatedTotalPrice = totalBeforeTax + taxAmt;
@@ -717,7 +756,10 @@ const SalesForm = () => {
     });
 
     setRepairDetails(updatedRepairDetails);
-    localStorage.setItem(`repairDetails_${tabId}`, JSON.stringify(updatedRepairDetails));
+    localStorage.setItem(
+      `repairDetails_${tabId}`,
+      JSON.stringify(updatedRepairDetails)
+    );
 
     // Mark the offer as applied
     setAppliedOffers({
@@ -737,7 +779,7 @@ const SalesForm = () => {
         const response = await axios.get(`${baseURL}/get-unique-estimates`);
         setEstimate(response.data);
       } catch (error) {
-        console.error('Error fetching estimate details:', error);
+        console.error("Error fetching estimate details:", error);
       }
     };
     fetchEstimate();
@@ -765,7 +807,9 @@ const SalesForm = () => {
     if (!estimate_number) return;
 
     try {
-      const response = await axios.get(`${baseURL}/get-estimates/${estimate_number}`);
+      const response = await axios.get(
+        `${baseURL}/get-estimates/${estimate_number}`
+      );
 
       // First, update the state with the full estimate details
       setEstimateDetails(response.data);
@@ -777,10 +821,14 @@ const SalesForm = () => {
 
       // Filter only matching repeatedData items
       const filteredData = response.data.repeatedData
-        .filter(item =>
-          stock.some(stockItem => stockItem.PCode_BarCode === item.code && stockItem.Status === "Available")
+        .filter((item) =>
+          stock.some(
+            (stockItem) =>
+              stockItem.PCode_BarCode === item.code &&
+              stockItem.Status === "Available"
+          )
         )
-        .map(item => ({
+        .map((item) => ({
           ...item,
           invoice_number: formData.invoice_number, // Add invoice_number from formData
           transaction_status: "Sales", // Add transaction_status as "Sales"
@@ -789,13 +837,18 @@ const SalesForm = () => {
 
       if (filteredData.length > 0) {
         // Store filtered data in localStorage
-        localStorage.setItem(`repairDetails_${tabId}`, JSON.stringify(filteredData));
+        localStorage.setItem(
+          `repairDetails_${tabId}`,
+          JSON.stringify(filteredData)
+        );
 
         // Update state with filtered data
         setRepairDetails(filteredData);
 
         // Immediately retrieve and log stored data
-        const storedData = JSON.parse(localStorage.getItem(`repairDetails_${tabId}`));
+        const storedData = JSON.parse(
+          localStorage.getItem(`repairDetails_${tabId}`)
+        );
         console.log("Stored repairDetails:", storedData);
         console.log("Stored repairDetails:", repairDetails);
       } else {
@@ -805,7 +858,7 @@ const SalesForm = () => {
         console.log("No matching data found. LocalStorage cleared.");
       }
     } catch (error) {
-      console.error('Error fetching selected estimate details:', error);
+      console.error("Error fetching selected estimate details:", error);
     }
   };
 
@@ -829,9 +882,6 @@ const SalesForm = () => {
   const [autoEditIndex, setAutoEditIndex] = useState(null);
   const [autoUpdateInProgress, setAutoUpdateInProgress] = useState(false);
 
-
-
-
   const fetchOrders = async () => {
     try {
       const response = await axios.get(`${baseURL}/get-unique-order-details`);
@@ -839,15 +889,16 @@ const SalesForm = () => {
 
       const filteredData = response.data.filter(
         (item) =>
-          (item.transaction_status === 'Orders' || item.transaction_status === 'ConvertedInvoice') &&
-          item.invoice !== 'Converted'
+          (item.transaction_status === "Orders" ||
+            item.transaction_status === "ConvertedInvoice") &&
+          item.invoice !== "Converted"
       );
 
       console.log("Filtered Orders: ", filteredData);
       setOrderData(filteredData);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching repair details:', error);
+      console.error("Error fetching repair details:", error);
       setLoading(false);
     }
   };
@@ -859,7 +910,9 @@ const SalesForm = () => {
 
   const handleViewDetails = async (order_number) => {
     try {
-      const response = await axios.get(`${baseURL}/get-order-details/${order_number}`);
+      const response = await axios.get(
+        `${baseURL}/get-order-details/${order_number}`
+      );
       console.log("Fetched order details: ", response.data); // Log full response data
 
       // Filter repeatedData to include only items where transaction_status is "Orders"
@@ -868,8 +921,10 @@ const SalesForm = () => {
       );
 
       // Check if any item in repeatedData has invoice === "Converted"
-      const isInvoiceConverted = filteredData.some(item => item.invoice === "Converted");
-      console.log("isInvoiceConverted=", isInvoiceConverted)
+      const isInvoiceConverted = filteredData.some(
+        (item) => item.invoice === "Converted"
+      );
+      console.log("isInvoiceConverted=", isInvoiceConverted);
 
       // Set state with filtered repeatedData and invoice status
       setOrderDetails({
@@ -879,7 +934,6 @@ const SalesForm = () => {
       });
 
       setShowModal(true);
-
     } catch (error) {
       console.error("Error fetching repair details:", error);
     }
@@ -892,27 +946,34 @@ const SalesForm = () => {
 
   const fetchOrderDetails = async (order_number) => {
     try {
-      const response = await axios.get(`${baseURL}/get-order-details/${order_number}`);
+      const response = await axios.get(
+        `${baseURL}/get-order-details/${order_number}`
+      );
 
       // Filter only matching repeatedData items
-      const filteredData = response.data.repeatedData.map(item => ({
+      const filteredData = response.data.repeatedData.map((item) => ({
         ...item,
         invoice_number: formData.invoice_number, // Add invoice_number from formData
-        transaction_status: "Orders",             // Add transaction_status as "Sales"
+        transaction_status: "Orders", // Add transaction_status as "Sales"
         date: formData.date,
-        invoice: 'Converted',
+        invoice: "Converted",
       }));
 
       if (filteredData.length > 0) {
         // Store filtered data in localStorage
-        localStorage.setItem(`repairDetails_${tabId}`, JSON.stringify(filteredData));
+        localStorage.setItem(
+          `repairDetails_${tabId}`,
+          JSON.stringify(filteredData)
+        );
 
         // Update state with filtered data
         setRepairDetails(filteredData);
         setAutoEditIndex(0);
 
         // Immediately retrieve and log stored data
-        const storedData = JSON.parse(localStorage.getItem(`repairDetails_${tabId}`));
+        const storedData = JSON.parse(
+          localStorage.getItem(`repairDetails_${tabId}`)
+        );
         console.log("Stored repairDetails:", storedData);
         return filteredData;
       } else {
@@ -922,7 +983,7 @@ const SalesForm = () => {
         console.log("No matching data found. LocalStorage cleared.");
       }
     } catch (error) {
-      console.error('Error fetching selected estimate details:', error);
+      console.error("Error fetching selected estimate details:", error);
     }
   };
 
@@ -958,7 +1019,6 @@ const SalesForm = () => {
     }
   };
 
-
   useEffect(() => {
     if (repairDetails.length > 0 && autoEditIndex !== null) {
       handleEdit(autoEditIndex); // Trigger edit for current index
@@ -985,8 +1045,6 @@ const SalesForm = () => {
     }
   }, [autoUpdateInProgress]);
 
-
-
   const [repairs, setRepairs] = useState([]);
   const [selectedRepairs, setSelectedRepairs] = useState({});
 
@@ -996,7 +1054,7 @@ const SalesForm = () => {
       setRepairs(response.data);
       console.log("Repairs=", response.data);
     } catch (error) {
-      console.error('Error fetching repairs:', error);
+      console.error("Error fetching repairs:", error);
     }
   };
 
@@ -1009,46 +1067,48 @@ const SalesForm = () => {
       const storageKey = `repairDetails_${tabId}`;
 
       // Create new filtered entry with necessary fields
-      const filteredData = [{
-        sub_category: repair.item,
-        product_name: repair.item,
-        customer_id: repair.customer_id,
-        account_name: repair.account_name,
-        mobile: repair.mobile,
-        email: repair.email,
-        address1: repair.address1,
-        address2: repair.address2,
-        city: repair.city,
-        metal_type: repair.metal_type,
-        purity: repair.purity,
-        category: repair.category,
-        gross_weight: "1",
-        stone_weight: "0",
-        stone_price: "0",
-        weight_bw: "0",
-        va_on: "Gross Weight",
-        va_percent: "0",
-        wastage_weight: "0",
-        total_weight_av: "1",
-        mc_on: "MC %",
-        disscount_percentage: "0",
-        disscount: "0",
-        mc_per_gram: "0",
-        making_charges: "0",
-        printing_purity: repair.purity,
-        selling_purity: repair.purity,
-        qty: repair.qty,
-        total_price: repair.total_amt,
-        repair_no: repair.repair_no,
-        invoice_number: formData.invoice_number,
-        transaction_status: "Repairs",
-        date: formData.date,
-        invoice: "Converted",
-        rate: repair.total_amt,
-        tax_percent: "0",
-        tax_amt: "0",
-        hm_charges: "0"
-      }];
+      const filteredData = [
+        {
+          sub_category: repair.item,
+          product_name: repair.item,
+          customer_id: repair.customer_id,
+          account_name: repair.account_name,
+          mobile: repair.mobile,
+          email: repair.email,
+          address1: repair.address1,
+          address2: repair.address2,
+          city: repair.city,
+          metal_type: repair.metal_type,
+          purity: repair.purity,
+          category: repair.category,
+          gross_weight: "1",
+          stone_weight: "0",
+          stone_price: "0",
+          weight_bw: "0",
+          va_on: "Gross Weight",
+          va_percent: "0",
+          wastage_weight: "0",
+          total_weight_av: "1",
+          mc_on: "MC %",
+          disscount_percentage: "0",
+          disscount: "0",
+          mc_per_gram: "0",
+          making_charges: "0",
+          printing_purity: repair.purity,
+          selling_purity: repair.purity,
+          qty: repair.qty,
+          total_price: repair.total_amt,
+          repair_no: repair.repair_no,
+          invoice_number: formData.invoice_number,
+          transaction_status: "Repairs",
+          date: formData.date,
+          invoice: "Converted",
+          rate: repair.total_amt,
+          tax_percent: "0",
+          tax_amt: "0",
+          hm_charges: "0",
+        },
+      ];
 
       // Store in localStorage
       localStorage.setItem(storageKey, JSON.stringify(filteredData));
@@ -1067,12 +1127,11 @@ const SalesForm = () => {
     }
   };
 
-
   const handleRepairCheckboxChange = async (e, repair_no) => {
     const isChecked = e.target.checked;
     const storageKey = `repairDetails_${tabId}`;
 
-    const repair = repairs.find(r => r.repair_no === repair_no);
+    const repair = repairs.find((r) => r.repair_no === repair_no);
     if (!repair) return console.warn("Repair not found");
 
     if (isChecked) {
@@ -1098,11 +1157,6 @@ const SalesForm = () => {
       });
     }
   };
-
-
-
-
-
 
   // const handleAdd = () => {
   //   const storedRepairDetails = JSON.parse(localStorage.getItem(`repairDetails_${tabId}`)) || [];
@@ -1154,7 +1208,8 @@ const SalesForm = () => {
   // };
 
   const handleAdd = () => {
-    const storedRepairDetails = JSON.parse(localStorage.getItem(`repairDetails_${tabId}`)) || [];
+    const storedRepairDetails =
+      JSON.parse(localStorage.getItem(`repairDetails_${tabId}`)) || [];
 
     // Add new repair detail
     const updatedRepairDetails = [
@@ -1174,7 +1229,10 @@ const SalesForm = () => {
     ];
 
     setRepairDetails(updatedRepairDetails);
-    localStorage.setItem(`repairDetails_${tabId}`, JSON.stringify(updatedRepairDetails));
+    localStorage.setItem(
+      `repairDetails_${tabId}`,
+      JSON.stringify(updatedRepairDetails)
+    );
 
     // Reset form data
     setFormData((prevData) => ({
@@ -1208,9 +1266,10 @@ const SalesForm = () => {
       ...prevFormData,
       ...item,
       pieace_cost: pieceCost > 0 ? pieceCost.toFixed(2) : "",
-      rate: item.rate && parseFloat(item.rate) > 0
-        ? parseFloat(item.rate).toFixed(2)
-        : "",
+      rate:
+        item.rate && parseFloat(item.rate) > 0
+          ? parseFloat(item.rate).toFixed(2)
+          : "",
       piece_taxable_amt: pieceTaxableAmt,
     }));
   };
@@ -1225,14 +1284,16 @@ const SalesForm = () => {
   };
 
   const handleDelete = (indexToDelete) => {
-    if (window.confirm('Are you sure you want to delete this item?')) {
-      setRepairDetails(repairDetails.filter((_, index) => index !== indexToDelete));
+    if (window.confirm("Are you sure you want to delete this item?")) {
+      setRepairDetails(
+        repairDetails.filter((_, index) => index !== indexToDelete)
+      );
       alert("Product deleted successfully");
     }
   };
 
   const resetProductFields = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       code: "",
       product_id: "",
@@ -1275,7 +1336,10 @@ const SalesForm = () => {
   };
 
   // Calculate totalPrice (sum of total_price from all repairDetails)
-  const totalPrice = repairDetails.reduce((sum, item) => sum + parseFloat(item.total_price || 0), 0);
+  const totalPrice = repairDetails.reduce(
+    (sum, item) => sum + parseFloat(item.total_price || 0),
+    0
+  );
 
   const [oldTableData, setOldTableData] = useState(() => {
     const savedData = localStorage.getItem(`oldTableData_${tabId}`);
@@ -1319,7 +1383,7 @@ const SalesForm = () => {
     setReturnData({
       invoice_number: "",
     });
-  }
+  };
 
   const handleBack = () => {
     navigate("/salestable");
@@ -1334,8 +1398,8 @@ const SalesForm = () => {
     navigate("/customermaster", {
       state: {
         from: `/sales?tabId=${tabId}`,
-        mobile: mobile // Pass the mobile number here
-      }
+        mobile: mobile, // Pass the mobile number here
+      },
     });
   };
 
@@ -1397,11 +1461,17 @@ const SalesForm = () => {
 
   const oldItemsAmount = location.state?.old_exchange_amt
     ? parseFloat(location.state.old_exchange_amt)
-    : oldSalesData.reduce((sum, item) => sum + parseFloat(item.total_amount || 0), 0);
+    : oldSalesData.reduce(
+        (sum, item) => sum + parseFloat(item.total_amount || 0),
+        0
+      );
 
   const schemeAmount = location.state?.scheme_amt
     ? parseFloat(location.state.scheme_amt)
-    : schemeSalesData.reduce((sum, item) => sum + parseFloat(item.paid_amount || 0), 0);
+    : schemeSalesData.reduce(
+        (sum, item) => sum + parseFloat(item.paid_amount || 0),
+        0
+      );
 
   const [selectedRows, setSelectedRows] = useState([]);
   const [isAllSelected, setIsAllSelected] = useState(false);
@@ -1433,7 +1503,9 @@ const SalesForm = () => {
     }
 
     try {
-      const selectedInvoices = selectedRows.map((rowIndex) => invoiceDetails[rowIndex]);
+      const selectedInvoices = selectedRows.map(
+        (rowIndex) => invoiceDetails[rowIndex]
+      );
 
       const repairDetailsUpdates = selectedInvoices.map((invoice) => ({
         id: invoice.id,
@@ -1451,25 +1523,32 @@ const SalesForm = () => {
         gross_weight: invoice.gross_weight,
       }));
 
-      const codesForAvailableEntries = selectedInvoices.map((invoice) => invoice.code);
+      const codesForAvailableEntries = selectedInvoices.map(
+        (invoice) => invoice.code
+      );
 
       // Execute all API calls in parallel
       const responses = await Promise.allSettled([
-        axios.post(`${baseURL}/updateRepairDetails`, { updates: repairDetailsUpdates }),
+        axios.post(`${baseURL}/updateRepairDetails`, {
+          updates: repairDetailsUpdates,
+        }),
         axios.post(`${baseURL}/updateOpenTags`, { updates: openTagsUpdates }),
         axios.post(`${baseURL}/updateProduct`, { updates: productUpdates }),
-        axios.post(`${baseURL}/addAvailableEntry`, { codes: codesForAvailableEntries }),
+        axios.post(`${baseURL}/addAvailableEntry`, {
+          codes: codesForAvailableEntries,
+        }),
       ]);
 
       // Check if any API failed
-      const failedRequests = responses.filter(res => res.status === "rejected");
+      const failedRequests = responses.filter(
+        (res) => res.status === "rejected"
+      );
       if (failedRequests.length > 0) {
         console.error("Some API calls failed:", failedRequests);
         alert("Some updates failed. Please check console for details.");
       } else {
         alert("Sale Return added Successfully!");
       }
-
     } catch (error) {
       console.error("Error during checkout:", error);
       alert("An error occurred during checkout. Please try again.");
@@ -1483,7 +1562,6 @@ const SalesForm = () => {
     }
   }, []);
 
-
   const salesTaxableAmount = selectedRows.reduce((sum, rowIndex) => {
     const detail = invoiceDetails[rowIndex];
     const stonePrice = parseFloat(detail.stone_price) || 0;
@@ -1491,7 +1569,14 @@ const SalesForm = () => {
     const rateAmt = parseFloat(detail.rate_amt) || 0;
     const itemDiscount = parseFloat(detail.disscount) || 0;
     const itemFestivalDiscount = parseFloat(detail.festival_discount) || 0;
-    return sum + stonePrice + makingCharges + rateAmt - itemDiscount - itemFestivalDiscount;
+    return (
+      sum +
+      stonePrice +
+      makingCharges +
+      rateAmt -
+      itemDiscount -
+      itemFestivalDiscount
+    );
   }, 0);
 
   const salesTaxAmount = selectedRows.reduce((sum, rowIndex) => {
@@ -1504,14 +1589,19 @@ const SalesForm = () => {
   const isSameMonth = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
-    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    return (
+      date.getMonth() === now.getMonth() &&
+      date.getFullYear() === now.getFullYear()
+    );
   };
 
-  const allSelectedRowsAreThisMonth = selectedRows.every(rowIndex =>
+  const allSelectedRowsAreThisMonth = selectedRows.every((rowIndex) =>
     isSameMonth(invoiceDetails[rowIndex]?.date)
   );
 
-  const salesAmountToPass = allSelectedRowsAreThisMonth ? salesNetAmount : salesTaxableAmount;
+  const salesAmountToPass = allSelectedRowsAreThisMonth
+    ? salesNetAmount
+    : salesTaxableAmount;
 
   let totalAmount = 0;
   let discountAmt = 0;
@@ -1524,30 +1614,35 @@ const SalesForm = () => {
   let totalPieceCost = 0;
   let hasWeightBasedItems = false;
 
-  if (isManualNetMode && typeof manualNetAmount !== "undefined" && manualNetAmount > 0) {
-    // Step 1: Compute totalAmount, makingCharges, pieceCost
+  // First, calculate totalAmount
+  repairDetails.forEach((item) => {
+    const pricing = item.pricing;
 
-    repairDetails.forEach((item) => {
+    if (pricing === "By Weight") {
+      const stonePrice = parseFloat(item.stone_price) || 0;
+      const makingCharges = parseFloat(item.making_charges) || 0;
+      const rateAmt = parseFloat(item.rate_amt) || 0;
+      const hmCharges = parseFloat(item.hm_charges) || 0;
+      totalAmount += stonePrice + makingCharges + rateAmt + hmCharges;
+      totalMakingCharges += makingCharges;
+      hasWeightBasedItems = true;
+    } else {
+      const pieceCost = parseFloat(item.pieace_cost) || 0;
+      const qty = parseFloat(item.qty) || 0;
+      const itemTotal = pieceCost * qty;
+      totalAmount += itemTotal;
+      totalPieceCost += itemTotal;
+    }
+  });
 
-      const pricing = item.pricing;
+  // Calculate taxable base amount (totalAmount - oldItemsAmount)
+  const taxableBaseAmount = Math.max(0, totalAmount - oldItemsAmount);
 
-      if (pricing === "By Weight") {
-        const stonePrice = parseFloat(item.stone_price) || 0;
-        const makingCharges = parseFloat(item.making_charges) || 0;
-        const rateAmt = parseFloat(item.rate_amt) || 0;
-        const hmCharges = parseFloat(item.hm_charges) || 0;
-        totalAmount += stonePrice + makingCharges + rateAmt + hmCharges;
-        totalMakingCharges += makingCharges;
-        hasWeightBasedItems = true;
-      } else {
-        const pieceCost = parseFloat(item.pieace_cost) || 0;
-        const qty = parseFloat(item.qty) || 0;
-        const itemTotal = pieceCost * qty;
-        totalAmount += itemTotal;
-        totalPieceCost += itemTotal;
-      }
-    });
-
+  if (
+    isManualNetMode &&
+    typeof manualNetAmount !== "undefined" &&
+    manualNetAmount > 0
+  ) {
     // Step 2: Reverse tax and discount calculation from netAmount
     let cumulativeTaxable = 0;
     let cumulativeTax = 0;
@@ -1573,9 +1668,14 @@ const SalesForm = () => {
       }
 
       const itemShare = itemTotal / totalAmount;
-      const itemNet = manualNetAmount * itemShare;
-      const itemTaxable = itemNet / (1 + itemTaxPercent / 100);
-      const itemTax = itemNet - itemTaxable;
+
+      // Calculate share of taxable base and manual net amount
+      const itemTaxableBase = taxableBaseAmount * itemShare;
+      const itemManualNet = manualNetAmount * itemShare;
+
+      // Reverse calculate taxable amount from net amount
+      const itemTaxable = itemManualNet / (1 + itemTaxPercent / 100);
+      const itemTax = itemManualNet - itemTaxable;
 
       cumulativeTaxable += itemTaxable;
       cumulativeTax += itemTax;
@@ -1586,11 +1686,11 @@ const SalesForm = () => {
     netAmount = manualNetAmount;
     festivalDiscountAmt = totalFestivalDiscount;
 
-    discountAmt = totalAmount - taxableAmount - totalFestivalDiscount;
+    // Calculate discount based on taxable base amount
+    discountAmt = taxableBaseAmount - taxableAmount - totalFestivalDiscount;
 
     const discountBase = totalMakingCharges + totalPieceCost;
     discountPercent = discountBase ? (discountAmt * 100) / discountBase : 0;
-
 
     const roundedDiscount = parseFloat(discountPercent.toFixed(2));
 
@@ -1599,9 +1699,10 @@ const SalesForm = () => {
       localStorage.setItem(`discount_${tabId}`, roundedDiscount.toString());
       applyDiscountToRepairDetails(roundedDiscount);
     }
-
   } else {
     // FORWARD CALCULATION
+    let totalDiscounts = 0;
+
     repairDetails.forEach((item) => {
       const pricing = item.pricing;
       const itemDiscount = parseFloat(item.disscount) || 0;
@@ -1616,7 +1717,6 @@ const SalesForm = () => {
         const hmCharges = parseFloat(item.hm_charges) || 0;
 
         itemTotal = stonePrice + makingCharges + rateAmt + hmCharges;
-        totalAmount += itemTotal;
         totalMakingCharges += makingCharges;
         hasWeightBasedItems = true;
       } else {
@@ -1624,34 +1724,56 @@ const SalesForm = () => {
         const qty = parseFloat(item.qty) || 0;
 
         itemTotal = pieceCost * qty;
-        totalAmount += itemTotal;
-        totalPieceCost += itemTotal;
       }
-
-      const totalDiscount = itemDiscount + itemFestivalDiscount;
-      const itemTaxable = itemTotal - totalDiscount;
-      const taxAmt = (itemTaxable * itemTaxPercent) / 100;
 
       discountAmt += itemDiscount;
       festivalDiscountAmt += itemFestivalDiscount;
-
-      taxableAmount += itemTaxable;
-      taxAmount += taxAmt;
-      netAmount += itemTaxable + taxAmt;
+      totalDiscounts += itemDiscount + itemFestivalDiscount;
     });
+
+    // Calculate overall taxable amount
+    taxableAmount = taxableBaseAmount - totalDiscounts;
+
+    // Calculate tax proportionally based on each item's contribution
+    let totalTax = 0;
+    let totalTaxableNet = 0;
+
+    repairDetails.forEach((item) => {
+      const itemTaxPercent = parseFloat(item.tax_percent) || 0;
+      let itemTotal = 0;
+
+      if (item.pricing === "By Weight") {
+        const stonePrice = parseFloat(item.stone_price) || 0;
+        const makingCharges = parseFloat(item.making_charges) || 0;
+        const rateAmt = parseFloat(item.rate_amt) || 0;
+        const hmCharges = parseFloat(item.hm_charges) || 0;
+        itemTotal = stonePrice + makingCharges + rateAmt + hmCharges;
+      } else {
+        const pieceCost = parseFloat(item.pieace_cost) || 0;
+        const qty = parseFloat(item.qty) || 0;
+        itemTotal = pieceCost * qty;
+      }
+
+      const itemShare = itemTotal / totalAmount;
+      const itemTaxableShare = taxableAmount * itemShare;
+      const itemTax = (itemTaxableShare * itemTaxPercent) / 100;
+
+      totalTax += itemTax;
+      totalTaxableNet += itemTaxableShare;
+    });
+
+    taxAmount = totalTax;
+    taxableAmount = totalTaxableNet;
+    netAmount = taxableAmount + taxAmount; // Add back old items amount to net
 
     const discountBase = totalMakingCharges + totalPieceCost;
     discountPercent = discountBase ? (discountAmt * 100) / discountBase : 0;
-
   }
-
 
   const handleManualNetAmountChange = (value) => {
     setManualNetAmount(value);
     setIsManualNetMode(true); // Enter manual net amount mode
   };
-
-
 
   const handleManualNetPayAmountChange = (value) => {
     setManualNetPayAmount(value);
@@ -1671,7 +1793,8 @@ const SalesForm = () => {
         const makingCharges = parseFloat(item.making_charges) || 0;
         const rateAmt = parseFloat(item.rate_amt) || 0;
         const hmCharges = parseFloat(item.hm_charges) || 0;
-        totalAmountWithoutDiscounts += stonePrice + makingCharges + rateAmt + hmCharges;
+        totalAmountWithoutDiscounts +=
+          stonePrice + makingCharges + rateAmt + hmCharges;
         totalMakingCharges += makingCharges;
       } else {
         const pieceCost = parseFloat(item.pieace_cost) || 0;
@@ -1683,7 +1806,8 @@ const SalesForm = () => {
     });
 
     // Calculate what the netAmount should be to achieve this netPayAmount
-    const calculatedNetAmount = value + schemeAmount + oldItemsAmount + salesAmountToPass;
+    const calculatedNetAmount =
+      value + schemeAmount + oldItemsAmount + salesAmountToPass;
 
     // Calculate the required taxable amount after preserving festival discount
     let totalTaxableAmount = 0;
@@ -1715,7 +1839,10 @@ const SalesForm = () => {
 
       // Calculate taxable amount after subtracting festival discount
       const itemTaxableBeforeFestival = itemNet / (1 + itemTaxPercent / 100);
-      const itemTaxable = Math.max(0, itemTaxableBeforeFestival - itemFestivalDiscount);
+      const itemTaxable = Math.max(
+        0,
+        itemTaxableBeforeFestival - itemFestivalDiscount
+      );
       const itemTax = itemTaxable * (itemTaxPercent / 100);
 
       totalTaxableAmount += itemTaxable;
@@ -1723,12 +1850,16 @@ const SalesForm = () => {
     });
 
     // Now calculate the required discount amount (excluding festival discount)
-    const totalAfterFestivalDiscount = totalAmountWithoutDiscounts - festivalDiscountAmt;
-    const requiredDiscountAmount = totalAfterFestivalDiscount - totalTaxableAmount;
+    const totalAfterFestivalDiscount =
+      totalAmountWithoutDiscounts - festivalDiscountAmt;
+    const requiredDiscountAmount =
+      totalAfterFestivalDiscount - totalTaxableAmount;
 
     // Calculate discount percentage based on making charges and piece cost only
     const discountBase = totalMakingCharges + totalPieceCost;
-    const discountPercent = discountBase ? (requiredDiscountAmount * 100) / discountBase : 0;
+    const discountPercent = discountBase
+      ? (requiredDiscountAmount * 100) / discountBase
+      : 0;
 
     const roundedDiscount = parseFloat(discountPercent.toFixed(2));
 
@@ -1742,18 +1873,12 @@ const SalesForm = () => {
   };
 
   // Update the payableAmount calculation
-  const payableAmount = isManualNetMode
-    ? manualNetPayAmount
-    : netAmount - (schemeAmount + oldItemsAmount + salesAmountToPass);
+  // const payableAmount = isManualNetMode
+  //   ? manualNetPayAmount
+  //   : netAmount - (schemeAmount + oldItemsAmount + salesAmountToPass);
 
-  const netPayableAmount = payableAmount;
-  // const updatedOldItemsAmount = oldItemsAmount + salesNetAmount;
-  const netPayAmount = netPayableAmount
-
-
-
-
-
+  const netPayableAmount = isManualNetMode ? manualNetPayAmount : netAmount;
+  const netPayAmount = netPayableAmount;
 
   const [paymentDetails, setPaymentDetails] = useState({
     cash_amount: location.state?.cash_amount || "",
@@ -1762,15 +1887,19 @@ const SalesForm = () => {
     online_amt: location.state?.online_amt || "",
   });
 
-
   // Save payment details to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem(`paymentDetails_${tabId}`, JSON.stringify(paymentDetails));
+    localStorage.setItem(
+      `paymentDetails_${tabId}`,
+      JSON.stringify(paymentDetails)
+    );
   }, [paymentDetails]);
 
   useEffect(() => {
     // Retrieve payment details from localStorage on component mount
-    const storedPaymentDetails = localStorage.getItem(`paymentDetails_${tabId}`);
+    const storedPaymentDetails = localStorage.getItem(
+      `paymentDetails_${tabId}`
+    );
     if (storedPaymentDetails) {
       setPaymentDetails(JSON.parse(storedPaymentDetails));
     }
@@ -1789,10 +1918,10 @@ const SalesForm = () => {
       online_amt: 0,
     });
     setOldTableData([]); // Clear the oldTableData state
-    setSchemeTableData([])
+    setSchemeTableData([]);
     setDiscount(0);
-    localStorage.removeItem('oldSalesData');
-    localStorage.removeItem('schemeSalesData');
+    localStorage.removeItem("oldSalesData");
+    localStorage.removeItem("schemeSalesData");
     localStorage.removeItem(`repairDetails_${tabId}`);
     localStorage.removeItem(`paymentDetails_${tabId}`);
     localStorage.removeItem(`oldTableData_${tabId}`);
@@ -1802,7 +1931,6 @@ const SalesForm = () => {
     console.log("Data cleared successfully");
   };
 
-
   const [product, setProduct] = useState([]); // State to store table data
   const [company, setCompany] = useState(null);
   const [error, setError] = useState(null);
@@ -1810,7 +1938,7 @@ const SalesForm = () => {
     try {
       const response = await fetch(`${baseURL}/get/products`);
       if (!response.ok) {
-        throw new Error('Failed to fetch products');
+        throw new Error("Failed to fetch products");
       }
       const result = await response.json();
       setProduct(result);
@@ -1834,7 +1962,6 @@ const SalesForm = () => {
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     fetchProducts();
@@ -1868,7 +1995,7 @@ const SalesForm = () => {
       // }
 
       // Handle invoice number
-      const allItemsAreNew = repairDetails.every(item => item.id === "");
+      const allItemsAreNew = repairDetails.every((item) => item.id === "");
       let updatedFormData = { ...formData };
 
       if (allItemsAreNew) {
@@ -1885,7 +2012,7 @@ const SalesForm = () => {
 
       // Prepare payload
       const dataToSave = {
-        repairDetails: repairDetails.map(item => ({
+        repairDetails: repairDetails.map((item) => ({
           ...item,
           invoice_number: updatedFormData.invoice_number,
           customer_id: updatedFormData.customer_id,
@@ -1907,6 +2034,12 @@ const SalesForm = () => {
           chq_amt: paymentDetails.chq_amt || 0,
           online_amt: paymentDetails.online_amt || 0,
         })),
+        totalAmount:totalAmount,
+        discountAmt:discountAmt,
+        festivalDiscountAmt:festivalDiscountAmt,
+        taxableAmount: taxableAmount,
+        taxAmount: taxAmount,
+        netAmount:netAmount,
         oldItems: oldSalesData,
         memberSchemes: schemeSalesData,
         oldItemsAmount: oldItemsAmount || 0,
@@ -1949,18 +2082,22 @@ const SalesForm = () => {
 
       // Open preview in new tab
       const previewURL = `${baseURL}/invoices/${updatedFormData.invoice_number}.pdf`;
-      window.open(previewURL, '_blank');
+      window.open(previewURL, "_blank");
 
       // Attempt to share
-      const pdfFile = new File([pdfBlob], `${updatedFormData.invoice_number}.pdf`, {
-        type: 'application/pdf',
-      });
+      const pdfFile = new File(
+        [pdfBlob],
+        `${updatedFormData.invoice_number}.pdf`,
+        {
+          type: "application/pdf",
+        }
+      );
 
       if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
         try {
           await navigator.share({
             title: `Invoice ${updatedFormData.invoice_number}`,
-            text: 'Here is your invoice PDF.',
+            text: "Here is your invoice PDF.",
             files: [pdfFile],
           });
           console.log("PDF shared successfully");
@@ -1977,14 +2114,11 @@ const SalesForm = () => {
       navigate("/salestable");
       window.location.reload();
       await handleCheckout();
-
     } catch (error) {
       console.error("Error saving data:", error);
       alert("Error saving data");
     }
   };
-
-
 
   const handleSavePDFToServer = async (pdfBlob, invoiceNumber) => {
     const formData = new FormData();
@@ -2006,8 +2140,7 @@ const SalesForm = () => {
     }
   };
 
-
-  // const handleSave = async () => { 
+  // const handleSave = async () => {
   //   if (!formData.account_name || !formData.mobile) {
   //     alert("Please select the Customer or enter the Customer Mobile Number");
   //     return;
@@ -2107,10 +2240,10 @@ const SalesForm = () => {
       online_amt: 0,
     });
     setOldTableData([]); // Clear the oldTableData state
-    setSchemeTableData([])
+    setSchemeTableData([]);
     setDiscount(0);
-    localStorage.removeItem('oldSalesData');
-    localStorage.removeItem('schemeSalesData');
+    localStorage.removeItem("oldSalesData");
+    localStorage.removeItem("schemeSalesData");
     localStorage.removeItem(`repairDetails_${tabId}`);
     localStorage.removeItem(`paymentDetails_${tabId}`);
     localStorage.removeItem(`oldTableData_${tabId}`);
@@ -2132,9 +2265,6 @@ const SalesForm = () => {
   // useCalculations(formData, setFormData, offers,  isManualTotalPriceChange,
   //   setIsManualTotalPriceChange, isTotalPriceCleared);
 
-
-
-
   return (
     <div className="main-container">
       <Container className="sales-form-container">
@@ -2142,7 +2272,7 @@ const SalesForm = () => {
           {/* <h3 style={{ marginTop: '-45px', marginBottom: '10px', textAlign: 'left', color: '#a36e29' }}>
             Sales
           </h3> */}
-          <div className="sales-form" style={{ marginTop: '-40px' }}>
+          <div className="sales-form" style={{ marginTop: "-40px" }}>
             <div className="sales-form-left">
               <CustomerDetails
                 formData={formData}
@@ -2154,16 +2284,15 @@ const SalesForm = () => {
                 mobileRef={mobileRef}
                 tabId={tabId}
               />
-
             </div>
             <div className="sales-form-right">
-              <InvoiceDetails
-                formData={formData}
-                setFormData={setFormData}
-              />
+              <InvoiceDetails formData={formData} setFormData={setFormData} />
             </div>
           </div>
-          <div className="sales-form-section" style={{ marginTop: '-20px', marginBottom: "5px" }}>
+          <div
+            className="sales-form-section"
+            style={{ marginTop: "-20px", marginBottom: "5px" }}
+          >
             <ProductDetails
               formData={formData}
               setFormData={setFormData}
@@ -2220,11 +2349,16 @@ const SalesForm = () => {
           </div>
 
           <div className="sales-form-section">
-            <ProductTable repairDetails={repairDetails} onEdit={handleEdit} onDelete={handleDelete} />
+            <ProductTable
+              repairDetails={repairDetails}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           </div>
           <div className="sales-form">
             <div className="sales-form-third">
-              <SalesFormSection metal={metal}
+              <SalesFormSection
+                metal={metal}
                 setMetal={setMetal}
                 setOldSalesData={setOldSalesData}
                 oldTableData={oldTableData}
@@ -2292,7 +2426,8 @@ const SalesForm = () => {
                 salesTaxableAmount={salesTaxableAmount}
                 // updatedOldItemsAmount={updatedOldItemsAmount}
                 netPayAmount={netPayAmount}
-                oldSalesData={oldSalesData} schemeSalesData={schemeSalesData}
+                oldSalesData={oldSalesData}
+                schemeSalesData={schemeSalesData}
                 discount={discount}
                 handleDiscountChange={handleDiscountChange}
                 refreshSalesData={refreshSalesData}

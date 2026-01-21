@@ -202,7 +202,8 @@ const ProductDetails = ({
     if (formData.pricing === "By fixed") {
       const taxable = pieceCost * qty;
       taxAmt = (taxPercent * taxable) / 100;
-      totalPrice = taxable + taxAmt;
+      // totalPrice = taxable + taxAmt;
+      totalPrice = taxable;
 
       setFormData(prev => ({
         ...prev,
@@ -215,13 +216,8 @@ const ProductDetails = ({
       const totalDiscount = discount + festivalDiscount;
       const taxable = rateAmt + stonePrice + makingCharges + hmCharges - totalDiscount;
       taxAmt = (taxable * taxPercent) / 100;
-      totalPrice = taxable + taxAmt;
-
-      // setFormData(prev => ({
-      //   ...prev,
-      //   tax_amt: taxAmt.toFixed(2),
-      //   total_price: totalPrice.toFixed(2),
-      // }));
+      // totalPrice = taxable + taxAmt;
+      totalPrice = taxable;
       setFormData(prev => {
         const roundedTaxAmt = parseFloat(taxAmt).toFixed(2);
         const roundedTotalPrice = (Math.round(parseFloat(totalPrice) * 100) / 100).toFixed(2);
@@ -622,7 +618,7 @@ const ProductDetails = ({
               />
             </Col>
 
-            <Col xs={12} md={1}>
+            {/* <Col xs={12} md={1}>
               <InputField label="Tax%"
                 name="tax_percent"
                 value={formData.tax_percent}
@@ -633,11 +629,11 @@ const ProductDetails = ({
               <InputField
                 label="Tax Amt"
                 name="tax_amt"
-                value={formData.tax_amt || "0.00"} // Default to "0.00" if undefined
-                onChange={handleChange} // Optional, since it's auto-calculated
+                value={formData.tax_amt || "0.00"}
+                onChange={handleChange}
                 readOnly
               />
-            </Col>
+            </Col> */}
             <Col xs={12} md={1}>
               <InputField
                 label="MRP"
@@ -1056,7 +1052,7 @@ const ProductDetails = ({
                 onChange={handleChange} // Optional, since it's auto-calculated
               />
             </Col>
-            <Col xs={12} md={1}>
+            {/* <Col xs={12} md={1}>
               <InputField label="Tax%"
                 name="tax_percent"
                 value={formData.tax_percent}
@@ -1067,11 +1063,11 @@ const ProductDetails = ({
               <InputField
                 label="Tax Amt"
                 name="tax_amt"
-                value={formData.tax_amt || "0.00"} // Default to "0.00" if undefined
-                onChange={handleChange} // Optional, since it's auto-calculated
+                value={formData.tax_amt || "0.00"} 
+                onChange={handleChange} 
                 readOnly
               />
-            </Col>
+            </Col> */}
             <Col xs={10} md={2}>
               <InputField
                 label="Total Price"

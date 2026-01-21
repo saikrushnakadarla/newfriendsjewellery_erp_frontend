@@ -211,6 +211,10 @@ const PaymentDetails = ({
                 <td colSpan="4">{festivalDiscountAmt.toFixed(2)}</td>
               </tr>
               <tr style={{ fontSize: "13px" }}>
+                <td colSpan="16" className="text-right" >Old Items Amount</td>
+                <td colSpan="4">{oldItemsAmount.toFixed(2)}</td>
+              </tr>
+              <tr style={{ fontSize: "13px" }}>
                 <td colSpan="16" className="text-right" >Taxable Amount</td>
                 <td colSpan="4">{taxableAmount.toFixed(2)}</td>
               </tr>
@@ -239,10 +243,7 @@ const PaymentDetails = ({
                 <td colSpan="4">{netAmount.toFixed(2)}</td> */}
 
               </tr>
-              <tr style={{ fontSize: "13px" }}>
-                <td colSpan="16" className="text-right" >Old Items Amount</td>
-                <td colSpan="4">{oldItemsAmount.toFixed(2)}</td>
-              </tr>
+              
               <tr style={{ fontSize: "13px" }}>
                 <td colSpan="16" className="text-right" >Scheme Amount</td>
                 <td colSpan="4">{schemeAmount.toFixed(2)}</td>
