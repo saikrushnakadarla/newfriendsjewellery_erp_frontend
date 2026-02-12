@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Row, Col, Button } from 'react-bootstrap';
-import DataTable from '../../../Pages/InputField/DataTable';
+import DataTable from '../../Transactions/StockEntry/DataTable';
 import baseURL from "../../../../Url/NodeBaseURL";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";

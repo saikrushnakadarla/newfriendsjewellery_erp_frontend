@@ -1,14 +1,15 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import DataTable from '../../../Pages/InputField/DataTable'; // Import your reusable DataTable component
-import { FaEdit, FaTrash, FaEye } from 'react-icons/fa';
-import { Button, Row, Col } from 'react-bootstrap';
-import InputField from '../../../Modules/Masters/ItemMaster/Inputfield'; // Assuming you have this reusable input field component
-import './StockEntryTable.css';
+import React, { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+// import DataTable from "../../../Pages/InputField/DataTable"; 
+import DataTable from "./DataTable";
+import { FaEdit, FaTrash, FaEye } from "react-icons/fa";
+import { Button, Row, Col } from "react-bootstrap";
+import InputField from "../../../Modules/Masters/ItemMaster/Inputfield"; // Assuming you have this reusable input field component
+import "./StockEntryTable.css";
 import StoneDetailsModal from "./StoneDetailsModal";
 import baseURL from "../../../../Url/NodeBaseURL";
-import axios from 'axios';
-import Modal from 'react-bootstrap/Modal';
+import axios from "axios";
+import Modal from "react-bootstrap/Modal";
 import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import JsBarcode from "jsbarcode";
@@ -28,9 +29,8 @@ const StockEntryTable = (selectedProduct) => {
     rate_24crt: "",
     rate_22crt: "",
     rate_18crt: "",
-    rate_16crt: ""
+    rate_16crt: "",
   });
-
 
   useEffect(() => {
     const fetchCurrentRates = async () => {
@@ -50,10 +50,11 @@ const StockEntryTable = (selectedProduct) => {
 
         setFormData((prev) => ({
           ...prev,
-          rate_24k: metalType === "silver" ? newRates.silver_rate : newRates.rate_24crt,
+          rate_24k:
+            metalType === "silver" ? newRates.silver_rate : newRates.rate_24crt,
         }));
       } catch (error) {
-        console.error('Error fetching current rates:', error);
+        console.error("Error fetching current rates:", error);
       }
     };
 
@@ -87,20 +88,22 @@ const StockEntryTable = (selectedProduct) => {
     }
   }, [formData.Purity, formData.rate_24k]);
 
-
   useEffect(() => {
     fetch(`${baseURL}/get/opening-tags-entry`)
       .then((response) => {
         if (!response.ok) {
-          throw new Error('Failed to fetch stock entries');
+          throw new Error("Failed to fetch stock entries");
         }
         return response.json();
       })
       .then((data) => {
-        setData(data.result);
+        const availableData = data.result.filter(
+          (item) => item.Status === "Available",
+        );
+        setData(availableData);
       })
       .catch((error) => {
-        console.error('Error fetching stock entries:', error);
+        console.error("Error fetching stock entries:", error);
       });
   }, []);
 
@@ -113,7 +116,6 @@ const StockEntryTable = (selectedProduct) => {
     setShowViewModal(false);
     setSelectedRow(null);
   };
-
 
   const handleEdit = (rowData) => {
     setFormData(rowData); // Populate the form with the row data
@@ -152,7 +154,12 @@ const StockEntryTable = (selectedProduct) => {
       WastageWeight: wastageWeight.toFixed(2),
       TotalWeight_AW: totalWeight.toFixed(2),
     }));
-  }, [formData.Wastage_On, formData.Wastage_Percentage, formData.Gross_Weight, formData.Weight_BW]);
+  }, [
+    formData.Wastage_On,
+    formData.Wastage_Percentage,
+    formData.Gross_Weight,
+    formData.Weight_BW,
+  ]);
 
   const handleMakingChargesCalculation = () => {
     const totalWeight = parseFloat(formData.TotalWeight_AW) || 0;
@@ -176,23 +183,18 @@ const StockEntryTable = (selectedProduct) => {
         ...prev,
         Making_Charges: calculatedMakingCharges.toFixed(2),
       }));
-
     } else if (formData.Making_Charges_On === "MC / Piece") {
-      const calculatedMcPerGram = totalWeight
-        ? makingCharges / totalWeight
-        : 0;
+      const calculatedMcPerGram = totalWeight ? makingCharges / totalWeight : 0;
 
       setFormData((prev) => ({
         ...prev,
         MC_Per_Gram: calculatedMcPerGram.toFixed(2),
       }));
-
     } else if (formData.Making_Charges_On === "MC %") {
       // rateAmount = rate × total weight
       const rateAmount = rate * totalWeight;
 
-      const calculatedMakingCharges =
-        (mcPerGram * rateAmount) / 100;
+      const calculatedMakingCharges = (mcPerGram * rateAmount) / 100;
 
       setFormData((prev) => ({
         ...prev,
@@ -205,14 +207,12 @@ const StockEntryTable = (selectedProduct) => {
     ====================== */
 
     if (formData.pur_Making_Charges_On === "MC / Gram") {
-      const calculatedMakingCharges =
-        purTotalWeight * purMcPerGram;
+      const calculatedMakingCharges = purTotalWeight * purMcPerGram;
 
       setFormData((prev) => ({
         ...prev,
         pur_Making_Charges: calculatedMakingCharges.toFixed(2),
       }));
-
     } else if (formData.pur_Making_Charges_On === "MC / Piece") {
       const calculatedMcPerGram = purTotalWeight
         ? purMakingCharges / purTotalWeight
@@ -222,12 +222,10 @@ const StockEntryTable = (selectedProduct) => {
         ...prev,
         pur_MC_Per_Gram: calculatedMcPerGram.toFixed(2),
       }));
-
     } else if (formData.pur_Making_Charges_On === "MC %") {
       const rateAmount = purRate * purTotalWeight;
 
-      const calculatedMakingCharges =
-        (purMcPerGram * rateAmount) / 100;
+      const calculatedMakingCharges = (purMcPerGram * rateAmount) / 100;
 
       setFormData((prev) => ({
         ...prev,
@@ -243,12 +241,10 @@ const StockEntryTable = (selectedProduct) => {
     const makingCharges = parseFloat(formData.Making_Charges) || 0;
 
     // Step 1: Base amount
-    const baseAmount =
-      rate * weight + stonesPrice + makingCharges;
+    const baseAmount = rate * weight + stonesPrice + makingCharges;
 
     // Step 2: Extract tax percentage from string like "03% GST"
     const taxPercent = parseFloat(formData.tax) || 0;
-
 
     // Step 3: Calculate tax amount
     const taxAmt = (baseAmount * taxPercent) / 100;
@@ -307,8 +303,8 @@ const StockEntryTable = (selectedProduct) => {
         // 🔹 Refresh table data
         setData((prevData) =>
           prevData.map((item) =>
-            item.opentag_id === formData.opentag_id ? formData : item
-          )
+            item.opentag_id === formData.opentag_id ? formData : item,
+          ),
         );
       })
       .catch((error) => {
@@ -333,7 +329,7 @@ const StockEntryTable = (selectedProduct) => {
           `NT WT: ${data.TotalWeight_AW}`,
           `MRP: ${data.total_price}`,
         ].join("\n"),
-        { margin: 0 }
+        { margin: 0 },
       );
 
       /* ---------- LEFT PRODUCT DETAILS ---------- */
@@ -367,7 +363,6 @@ const StockEntryTable = (selectedProduct) => {
       doc.text("MRP:", startX, currentY);
       doc.text(`${data.total_price}`, startX + 11, currentY); // move value right
 
-
       /* ---------- QR CODE (RIGHT TOP) ---------- */
       const qrX = 35;
       const qrY = 2;
@@ -377,46 +372,30 @@ const StockEntryTable = (selectedProduct) => {
       const moveRight = 6; // adjust: 4, 6, 8 etc.
 
       // QR Image
-      doc.addImage(
-        qrImageData,
-        "PNG",
-        qrX + moveRight,
-        qrY,
-        qrSize,
-        qrSize
-      );
+      doc.addImage(qrImageData, "PNG", qrX + moveRight, qrY, qrSize, qrSize);
 
       /* ---------- TEXT BELOW QR ---------- */
       doc.setFont("helvetica", "bold");
 
       // O/N text (keeps alignment with QR)
       doc.setFontSize(4.2);
-      doc.text(
-        "O/N:",
-        qrX + moveRight,
-        qrY + qrSize + 2
-      );
-
+      doc.text("O/N:", qrX + moveRight, qrY + qrSize + 2);
 
       // 🔼 Shop name – move left
       doc.setFontSize(6.0);
       doc.text(
         "NEW FRIENDS JEWELLERS",
-        qrX - 2,              // ⬅️ move left (adjust 2–6 if needed)
-        qrY + qrSize + 4.5
+        qrX - 2, // ⬅️ move left (adjust 2–6 if needed)
+        qrY + qrSize + 4.5,
       );
-
-
 
       /* ---------- SAVE ---------- */
       const pdfBlob = doc.output("blob");
       await handleSavePDFToServer(pdfBlob, data.PCode_BarCode);
-
     } catch (error) {
       console.error("PDF Error:", error);
     }
   };
-
 
   const handleSavePDFToServer = async (pdfBlob, pcode) => {
     const formData = new FormData();
@@ -438,16 +417,30 @@ const StockEntryTable = (selectedProduct) => {
     }
   };
 
+  const totalGrossWt = React.useMemo(() => {
+  return data.reduce(
+    (sum, row) => sum + Number(row.Gross_Weight || 0),
+    0
+  );
+}, [data]);
+
+const totalNetWt = React.useMemo(() => {
+  return data.reduce(
+    (sum, row) => sum + Number(row.TotalWeight_AW || 0),
+    0
+  );
+}, [data]);
+
 
   const columns = React.useMemo(
     () => [
       {
-        Header: 'S No.',
+        Header: "S No.",
         Cell: ({ row }) => row.index + 1, // Generate a sequential number based on the row index
       },
       {
-        Header: 'Date',
-        accessor: 'date',
+        Header: "Date",
+        accessor: "date",
         Cell: ({ value }) => {
           if (!value) return "";
           const date = new Date(value);
@@ -455,53 +448,54 @@ const StockEntryTable = (selectedProduct) => {
           const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
           const year = date.getFullYear();
           return `${day}-${month}-${year}`;
-        }
+        },
       },
-      { Header: 'Category', accessor: 'category' },
-      { Header: 'Sub Category', accessor: 'sub_category' },
-      { Header: 'Product Design Name', accessor: 'design_master' },
-      { Header: 'Barcode', accessor: 'PCode_BarCode' },
-      { Header: 'Gross Wt', accessor: 'Gross_Weight' },
+      { Header: "Category", accessor: "category" },
+      { Header: "Sub Category", accessor: "sub_category" },
+      { Header: "Product Design Name", accessor: "design_master" },
+      { Header: "Barcode", accessor: "PCode_BarCode" },
+      { Header: "Gross Wt", accessor: "Gross_Weight" },
       // { Header: 'Stones Wt', accessor: 'Stones_Weight' },
       // { Header: 'Wasatage%', accessor: 'Wastage_Percentage' },
-      { Header: 'Net Wt', accessor: 'TotalWeight_AW' },
-      { Header: 'MC', accessor: 'Making_Charges' },
-      { Header: 'Rate', accessor: 'rate' },
-      { Header: 'Total Amt', accessor: 'total_price' },
-      { Header: 'Status', accessor: 'Status' },
+      { Header: "Net Wt", accessor: "TotalWeight_AW" },
+      { Header: "MC", accessor: "Making_Charges" },
+      { Header: "Rate", accessor: "rate" },
+      { Header: "Total Amt", accessor: "total_price" },
+      { Header: "Status", accessor: "Status" },
       {
         Header: "Barcode",
-        Cell: ({ row }) =>
+        Cell: ({ row }) => (
           <a
             href={`${baseURL}/invoices/${row.original.PCode_BarCode}.pdf`} // Fetch from backend
             target="_blank"
             rel="noopener noreferrer"
-            style={{ textDecoration: 'none' }}
+            style={{ textDecoration: "none" }}
           >
             📝 View
           </a>
+        ),
       },
       {
-        Header: 'Action',
+        Header: "Action",
         Cell: ({ row }) => (
           <div className="d-flex align-items-center">
             <FaEye
-              style={{ cursor: 'pointer', color: 'green' }}
+              style={{ cursor: "pointer", color: "green" }}
               onClick={() => handleView(row.original)}
             />
             <FaEdit
               style={{
-                cursor: 'pointer',
-                marginLeft: '10px',
-                color: 'blue',
+                cursor: "pointer",
+                marginLeft: "10px",
+                color: "blue",
               }}
               onClick={() => handleEdit(row.original)}
             />
             <FaTrash
               style={{
-                cursor: 'pointer',
-                marginLeft: '10px',
-                color: 'red',
+                cursor: "pointer",
+                marginLeft: "10px",
+                color: "red",
               }}
               onClick={() => handleDelete(row.original.opentag_id)}
             />
@@ -509,7 +503,7 @@ const StockEntryTable = (selectedProduct) => {
         ),
       },
     ],
-    []
+    [],
   );
 
   const handleDelete = async (id) => {
@@ -523,21 +517,22 @@ const StockEntryTable = (selectedProduct) => {
         alert(response.data.message);
         window.location.reload();
       } catch (error) {
-        console.error("Error deleting record:", error.response?.data || error.message);
+        console.error(
+          "Error deleting record:",
+          error.response?.data || error.message,
+        );
         alert("Failed to delete record.");
       }
     }
   };
-
-
-
 
   const [productOptions, setProductOptions] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const handleOpenModal = () => setShowModal(true);
   // Fetch product options for P ID dropdown (product_id)
   useEffect(() => {
-    axios.get(`${baseURL}/get/products`)
+    axios
+      .get(`${baseURL}/get/products`)
       .then((response) => {
         const options = response.data.map((product) => ({
           value: product.product_id,
@@ -548,8 +543,10 @@ const StockEntryTable = (selectedProduct) => {
       .catch((error) => console.error("Error fetching products:", error));
   }, []);
 
-  const isGoldCategory = formData.category && formData.category.toLowerCase().includes("gold");
-  const isSilverCategory = formData.category && formData.category.toLowerCase().includes("silver");
+  const isGoldCategory =
+    formData.category && formData.category.toLowerCase().includes("gold");
+  const isSilverCategory =
+    formData.category && formData.category.toLowerCase().includes("silver");
 
   useEffect(() => {
     if (isGoldCategory) {
@@ -573,16 +570,12 @@ const StockEntryTable = (selectedProduct) => {
     }
   }, [formData.category]);
 
-
   const handleChange = async (fieldOrEvent, valueArg) => {
-
     let field, value;
     if (fieldOrEvent && fieldOrEvent.target) {
-
       field = fieldOrEvent.target.name;
       value = fieldOrEvent.target.value;
     } else {
-
       field = fieldOrEvent;
       value = valueArg;
     }
@@ -612,16 +605,16 @@ const StockEntryTable = (selectedProduct) => {
       if (field === "Stones_Weight" || field === "stone_price_per_carat") {
         const stoneWeight =
           parseFloat(
-            field === "Stones_Weight" ? value : prevData.Stones_Weight
+            field === "Stones_Weight" ? value : prevData.Stones_Weight,
           ) || 0;
         const stonePricePerCarat =
           parseFloat(
             field === "stone_price_per_carat"
               ? value
-              : prevData.stone_price_per_carat
+              : prevData.stone_price_per_carat,
           ) || 0;
         if (stoneWeight > 0 && stonePricePerCarat > 0) {
-          const calculatedStonePrice = (stoneWeight / 0.20) * stonePricePerCarat;
+          const calculatedStonePrice = (stoneWeight / 0.2) * stonePricePerCarat;
           updatedData.Stones_Price = calculatedStonePrice.toFixed(2);
         } else {
           updatedData.Stones_Price = "";
@@ -662,7 +655,7 @@ const StockEntryTable = (selectedProduct) => {
     // --- Handle Sub-Category Change and Fetch Prefix/PCode_BarCode ---
     if (field === "sub_category") {
       const selectedCategory = subCategories.find(
-        (category) => category.subcategory_id === parseInt(value)
+        (category) => category.subcategory_id === parseInt(value),
       );
 
       const newPrefix = selectedCategory ? selectedCategory.prefix : "";
@@ -721,7 +714,7 @@ const StockEntryTable = (selectedProduct) => {
       try {
         const response = await axios.get(`${baseURL}/designmaster`);
         const designMasters = response.data.map((item) => {
-          console.log('Design ID:', item.design_id); // Log design_id
+          console.log("Design ID:", item.design_id); // Log design_id
           return {
             value: item.design_name, // Assuming the column name is "design_name"
             label: item.design_name,
@@ -730,7 +723,7 @@ const StockEntryTable = (selectedProduct) => {
         });
         setdesignOptions(designMasters);
       } catch (error) {
-        console.error('Error fetching design masters:', error);
+        console.error("Error fetching design masters:", error);
       }
     };
 
@@ -742,7 +735,8 @@ const StockEntryTable = (selectedProduct) => {
       try {
         const response = await axios.get(`${baseURL}/purity`);
         const filteredPurity = response.data.filter(
-          (item) => item.metal.toLowerCase() === formData.metal_type.toLowerCase()
+          (item) =>
+            item.metal.toLowerCase() === formData.metal_type.toLowerCase(),
         );
         setPurityOptions(filteredPurity);
 
@@ -752,8 +746,8 @@ const StockEntryTable = (selectedProduct) => {
         if (formData.metal_type.toLowerCase() === "gold") {
           const defaultOption = filteredPurity.find((option) =>
             ["22k", "22 kt", "22"].some((match) =>
-              option.name.toLowerCase().includes(match)
-            )
+              option.name.toLowerCase().includes(match),
+            ),
           );
           if (defaultOption) {
             setFormData((prevFormData) => ({
@@ -764,8 +758,8 @@ const StockEntryTable = (selectedProduct) => {
         } else if (formData.metal_type.toLowerCase() === "silver") {
           const defaultOption = filteredPurity.find((option) =>
             ["22k", "22 kt", "22"].some((match) =>
-              option.name.toLowerCase().includes(match)
-            )
+              option.name.toLowerCase().includes(match),
+            ),
           );
           if (defaultOption) {
             setFormData((prevFormData) => ({
@@ -816,12 +810,14 @@ const StockEntryTable = (selectedProduct) => {
       ) : (
         <div className="container mt-4">
           {isFormVisible && (
-            <form className="p-4 border rounded form-container-stockentry" onSubmit={handleSubmit}>
+            <form
+              className="p-4 border rounded form-container-stockentry"
+              onSubmit={handleSubmit}
+            >
               <h4>Stock Entry</h4>
 
               {/* Section 1 */}
               <div className="row g-3">
-
                 <div className="col-md-2">
                   <InputField
                     label="Category:"
@@ -835,7 +831,7 @@ const StockEntryTable = (selectedProduct) => {
                   <InputField
                     label="Sub Category:"
                     name="sub_category"
-                    value={formData.sub_category || ''}
+                    value={formData.sub_category || ""}
                     onChange={(e) => handleChange(e)}
                     readOnly
                   />
@@ -853,9 +849,12 @@ const StockEntryTable = (selectedProduct) => {
                     label="Design Name"
                     name="design_master"
                     type="select"
-                    value={formData.design_master || ''}
+                    value={formData.design_master || ""}
                     onChange={handleChange}
-                    options={designOptions.map(option => ({ value: option.value, label: option.label }))}
+                    options={designOptions.map((option) => ({
+                      value: option.value,
+                      label: option.label,
+                    }))}
                   />
                 </div>
 
@@ -876,7 +875,7 @@ const StockEntryTable = (selectedProduct) => {
                   <InputField
                     label="Pricing:"
                     name="Pricing"
-                    value={formData.Pricing || ''}
+                    value={formData.Pricing || ""}
                     onChange={handleChange}
                     readOnly
                   />
@@ -908,7 +907,7 @@ const StockEntryTable = (selectedProduct) => {
                   <InputField
                     label="Printing Purity"
                     name="printing_purity"
-                    value={formData.printing_purity || ''}
+                    value={formData.printing_purity || ""}
                     onChange={handleChange}
                   />
                 </div>
@@ -916,7 +915,7 @@ const StockEntryTable = (selectedProduct) => {
                   <InputField
                     label="Selling Purity"
                     name="Purity"
-                    value={formData.Purity || ''}
+                    value={formData.Purity || ""}
                     onChange={handleChange}
                   />
                 </div>
@@ -924,7 +923,7 @@ const StockEntryTable = (selectedProduct) => {
                   <InputField
                     label="Gross Wt"
                     name="Gross_Weight"
-                    value={formData.Gross_Weight || ''}
+                    value={formData.Gross_Weight || ""}
                     onChange={handleChange}
                   />
                 </div>
@@ -932,7 +931,7 @@ const StockEntryTable = (selectedProduct) => {
                   <InputField
                     label="Stones Wt"
                     name="Stones_Weight"
-                    value={formData.Stones_Weight || ''}
+                    value={formData.Stones_Weight || ""}
                     onChange={handleChange}
                   />
                 </div>
@@ -940,7 +939,7 @@ const StockEntryTable = (selectedProduct) => {
                   <InputField
                     label="Stones Price:"
                     name="Stones_Price"
-                    value={formData.Stones_Price || ''}
+                    value={formData.Stones_Price || ""}
                     onChange={handleChange}
                   />
                 </div>
@@ -948,7 +947,7 @@ const StockEntryTable = (selectedProduct) => {
                   <InputField
                     label="Weight BW:"
                     name="Weight_BW"
-                    value={formData.Weight_BW || ''}
+                    value={formData.Weight_BW || ""}
                     onChange={handleChange}
                   />
                 </div>
@@ -957,7 +956,7 @@ const StockEntryTable = (selectedProduct) => {
                     label="Wastage On"
                     name="Wastage_On"
                     type="select"
-                    value={formData.Wastage_On || ''}
+                    value={formData.Wastage_On || ""}
                     onChange={handleChange}
                     options={[
                       { value: "Gross Weight", label: "Gross Weight" },
@@ -969,7 +968,7 @@ const StockEntryTable = (selectedProduct) => {
                   <InputField
                     label="Wastage %"
                     name="Wastage_Percentage"
-                    value={formData.Wastage_Percentage || ''}
+                    value={formData.Wastage_Percentage || ""}
                     onChange={handleChange}
                   />
                 </div>
@@ -977,7 +976,7 @@ const StockEntryTable = (selectedProduct) => {
                   <InputField
                     label="W.Wt"
                     name="WastageWeight"
-                    value={formData.WastageWeight || ''}
+                    value={formData.WastageWeight || ""}
                     onChange={handleChange}
                   />
                 </div>
@@ -985,7 +984,7 @@ const StockEntryTable = (selectedProduct) => {
                   <InputField
                     label="Total Weight"
                     name="TotalWeight_AW"
-                    value={formData.TotalWeight_AW || ''}
+                    value={formData.TotalWeight_AW || ""}
                     onChange={handleChange}
                   />
                 </div>
@@ -993,7 +992,7 @@ const StockEntryTable = (selectedProduct) => {
                   <InputField
                     label="Rate"
                     name="rate"
-                    value={formData.rate || ''}
+                    value={formData.rate || ""}
                     onChange={handleChange}
                   />
                 </div>
@@ -1046,13 +1045,12 @@ const StockEntryTable = (selectedProduct) => {
                     onChange={handleChange}
                     readOnly
                   />
-
                 </div>
                 <div className="col-md-2">
                   <InputField
                     label="HUID No"
                     name="HUID_No"
-                    value={formData.HUID_No || ''}
+                    value={formData.HUID_No || ""}
                     onChange={handleChange}
                   />
                 </div>
@@ -1061,7 +1059,7 @@ const StockEntryTable = (selectedProduct) => {
                     label="Stock Point"
                     name="Stock_Point"
                     type="select"
-                    value={formData.Stock_Point || ''}
+                    value={formData.Stock_Point || ""}
                     onChange={handleChange}
                     options={[
                       { value: "Display Floor1", label: "Display Floor1" },
@@ -1070,9 +1068,7 @@ const StockEntryTable = (selectedProduct) => {
                     ]}
                   />
                 </div>
-
               </div>
-
 
               <Button
                 type="button"
@@ -1082,11 +1078,14 @@ const StockEntryTable = (selectedProduct) => {
               >
                 Cancel
               </Button>
-              <Button className="create_but" type="" variant="success"
-                style={{ backgroundColor: '#a36e29', borderColor: '#a36e29' }}>
+              <Button
+                className="create_but"
+                type=""
+                variant="success"
+                style={{ backgroundColor: "#a36e29", borderColor: "#a36e29" }}
+              >
                 Update
               </Button>
-
             </form>
           )}
         </div>
@@ -1096,103 +1095,200 @@ const StockEntryTable = (selectedProduct) => {
         handleCloseModal={handleCloseModal}
         handleUpdateStoneDetails={handleUpdateStoneDetails}
       />
-      <Modal show={showViewModal} onHide={handleCloseViewModal} centered size='xl'>
+      <Modal
+        show={showViewModal}
+        onHide={handleCloseViewModal}
+        centered
+        size="xl"
+      >
         <Modal.Header closeButton>
           <Modal.Title>View Product Details</Modal.Title>
         </Modal.Header>
-        <Modal.Body style={{ fontSize: '13px' }}>
+        <Modal.Body style={{ fontSize: "13px" }}>
           {selectedRow ? (
             <>
               {/* <div className='small'> */}
-              <Row >
+              <Row>
                 <Col md={3} style={{ whiteSpace: "nowrap" }}>
-                  <p><strong>Supplier:</strong> {selectedRow.account_name}</p>
+                  <p>
+                    <strong>Supplier:</strong> {selectedRow.account_name}
+                  </p>
                 </Col>
                 <Col md={3} style={{ whiteSpace: "nowrap" }}>
-                  <p><strong>Category:</strong> {selectedRow.category}</p>
+                  <p>
+                    <strong>Category:</strong> {selectedRow.category}
+                  </p>
                 </Col>
                 <Col md={3} style={{ whiteSpace: "nowrap" }}>
-                  <p><strong>Sub Category:</strong> {selectedRow.sub_category}</p>
+                  <p>
+                    <strong>Sub Category:</strong> {selectedRow.sub_category}
+                  </p>
                 </Col>
                 <Col md={3} style={{ whiteSpace: "nowrap" }}>
-                  <p><strong>Design Name:</strong> {selectedRow.design_master}</p>
+                  <p>
+                    <strong>Design Name:</strong> {selectedRow.design_master}
+                  </p>
                 </Col>
               </Row>
 
               {/* Second Row: Pricing, Barcode, HUID No, Stock Point */}
-              <Row >
-
+              <Row>
                 <Col md={3}>
-                  <p><strong>Pricing:</strong> {selectedRow.Pricing}</p>
+                  <p>
+                    <strong>Pricing:</strong> {selectedRow.Pricing}
+                  </p>
                 </Col>
                 <Col md={3}>
-                  <p><strong>Barcode:</strong> {selectedRow.PCode_BarCode}</p>
+                  <p>
+                    <strong>Barcode:</strong> {selectedRow.PCode_BarCode}
+                  </p>
                 </Col>
                 <Col md={3}>
-                  <p><strong>HUID No:</strong> {selectedRow.HUID_No}</p>
+                  <p>
+                    <strong>HUID No:</strong> {selectedRow.HUID_No}
+                  </p>
                 </Col>
                 <Col md={3}>
-                  <p><strong>Stock Point:</strong> {selectedRow.Stock_Point}</p>
+                  <p>
+                    <strong>Stock Point:</strong> {selectedRow.Stock_Point}
+                  </p>
                 </Col>
               </Row>
 
               <Row>
-
-
                 <Col md={3}>
-                  <p><strong>Gross Weight:</strong> {selectedRow.Gross_Weight}</p>
-                  <p><strong>Stone Weight:</strong> {selectedRow.Stones_Weight}</p>
-                  <p><strong>Wastage %:</strong> {selectedRow.Wastage_Percentage}</p>
-                  <p><strong>Total Weight:</strong> {selectedRow.TotalWeight_AW}</p>
-                  <p><strong>Making Charges:</strong> {selectedRow.Making_Charges}</p>
-                  <p><strong>Status:</strong> {selectedRow.Status}</p>
-                  <p><strong>Purity:</strong> {selectedRow.Purity}</p>
-                  <p><strong>Metal Type:</strong> {selectedRow.metal_type}</p>
+                  <p>
+                    <strong>Gross Weight:</strong> {selectedRow.Gross_Weight}
+                  </p>
+                  <p>
+                    <strong>Stone Weight:</strong> {selectedRow.Stones_Weight}
+                  </p>
+                  <p>
+                    <strong>Wastage %:</strong> {selectedRow.Wastage_Percentage}
+                  </p>
+                  <p>
+                    <strong>Total Weight:</strong> {selectedRow.TotalWeight_AW}
+                  </p>
+                  <p>
+                    <strong>Making Charges:</strong>{" "}
+                    {selectedRow.Making_Charges}
+                  </p>
+                  <p>
+                    <strong>Status:</strong> {selectedRow.Status}
+                  </p>
+                  <p>
+                    <strong>Purity:</strong> {selectedRow.Purity}
+                  </p>
+                  <p>
+                    <strong>Metal Type:</strong> {selectedRow.metal_type}
+                  </p>
                 </Col>
 
                 <Col md={3}>
                   {/* <p><strong>Prefix:</strong> {selectedRow.Prefix}</p> */}
-                  <p><strong>Wastage On:</strong> {selectedRow.Wastage_On}</p>
-                  <p><strong>Wastage Weight:</strong> {selectedRow.WastageWeight}</p>
-                  <p><strong>MC Per Gram:</strong> {selectedRow.MC_Per_Gram}</p>
-                  <p><strong>Making Charges On:</strong> {selectedRow.Making_Charges_On}</p>
+                  <p>
+                    <strong>Wastage On:</strong> {selectedRow.Wastage_On}
+                  </p>
+                  <p>
+                    <strong>Wastage Weight:</strong> {selectedRow.WastageWeight}
+                  </p>
+                  <p>
+                    <strong>MC Per Gram:</strong> {selectedRow.MC_Per_Gram}
+                  </p>
+                  <p>
+                    <strong>Making Charges On:</strong>{" "}
+                    {selectedRow.Making_Charges_On}
+                  </p>
                   {/* <p><strong>Source:</strong> {selectedRow.Source}</p> */}
                   {/* <p><strong>QR Status:</strong> {selectedRow.qr_status}</p> */}
                   {/* <p><strong>Added At:</strong> {new Date(selectedRow.added_at).toLocaleString()}</p> */}
-                  <p><strong>Deduct Stone Wt:</strong> {selectedRow.deduct_st_Wt}</p>
-                  <p><strong>Size:</strong> {selectedRow.size}</p>
-                  <p><strong>Tag ID:</strong> {selectedRow.tag_id}</p>
-                  <p><strong>Tag Weight:</strong> {selectedRow.tag_weight}</p>
+                  <p>
+                    <strong>Deduct Stone Wt:</strong> {selectedRow.deduct_st_Wt}
+                  </p>
+                  <p>
+                    <strong>Size:</strong> {selectedRow.size}
+                  </p>
+                  <p>
+                    <strong>Tag ID:</strong> {selectedRow.tag_id}
+                  </p>
+                  <p>
+                    <strong>Tag Weight:</strong> {selectedRow.tag_weight}
+                  </p>
                 </Col>
 
                 <Col md={3}>
-                  <p><strong>Pur. Gross Weight:</strong> {selectedRow.pur_Gross_Weight}</p>
-                  <p><strong>Pur. Stone Weight:</strong> {selectedRow.pur_Stones_Weight}</p>
-                  <p><strong>Pur. Deduct Stone Wt:</strong> {selectedRow.pur_deduct_st_Wt}</p>
-                  <p><strong>Pur. Stones Price:</strong> {selectedRow.pur_Stones_Price}</p>
-                  <p><strong>Pur. Weight BW:</strong> {selectedRow.pur_Weight_BW}</p>
-                  <p><strong>Pur. Wastage On:</strong> {selectedRow.pur_Wastage_On}</p>
-                  <p><strong>Pur. Wastage %:</strong> {selectedRow.pur_Wastage_Percentage}</p>
-                  <p><strong>Pur. Wastage Weight:</strong> {selectedRow.pur_WastageWeight}</p>
-                  <p><strong>Pur. Total Weight:</strong> {selectedRow.pur_TotalWeight_AW}</p>
-
-
-
+                  <p>
+                    <strong>Pur. Gross Weight:</strong>{" "}
+                    {selectedRow.pur_Gross_Weight}
+                  </p>
+                  <p>
+                    <strong>Pur. Stone Weight:</strong>{" "}
+                    {selectedRow.pur_Stones_Weight}
+                  </p>
+                  <p>
+                    <strong>Pur. Deduct Stone Wt:</strong>{" "}
+                    {selectedRow.pur_deduct_st_Wt}
+                  </p>
+                  <p>
+                    <strong>Pur. Stones Price:</strong>{" "}
+                    {selectedRow.pur_Stones_Price}
+                  </p>
+                  <p>
+                    <strong>Pur. Weight BW:</strong> {selectedRow.pur_Weight_BW}
+                  </p>
+                  <p>
+                    <strong>Pur. Wastage On:</strong>{" "}
+                    {selectedRow.pur_Wastage_On}
+                  </p>
+                  <p>
+                    <strong>Pur. Wastage %:</strong>{" "}
+                    {selectedRow.pur_Wastage_Percentage}
+                  </p>
+                  <p>
+                    <strong>Pur. Wastage Weight:</strong>{" "}
+                    {selectedRow.pur_WastageWeight}
+                  </p>
+                  <p>
+                    <strong>Pur. Total Weight:</strong>{" "}
+                    {selectedRow.pur_TotalWeight_AW}
+                  </p>
                 </Col>
 
                 <Col md={3}>
-                  <p><strong>Pur. MC / Gram:</strong> {selectedRow.pur_MC_Per_Gram}</p>
-                  <p><strong>Pur. MC Charges:</strong> {selectedRow.pur_Making_Charges}</p>
+                  <p>
+                    <strong>Pur. MC / Gram:</strong>{" "}
+                    {selectedRow.pur_MC_Per_Gram}
+                  </p>
+                  <p>
+                    <strong>Pur. MC Charges:</strong>{" "}
+                    {selectedRow.pur_Making_Charges}
+                  </p>
                   {/* <p><strong>Invoice:</strong> {selectedRow.invoice}</p> */}
-                  <p><strong>Stone Price / Carat:</strong> {selectedRow.stone_price_per_carat}</p>
+                  <p>
+                    <strong>Stone Price / Carat:</strong>{" "}
+                    {selectedRow.stone_price_per_carat}
+                  </p>
                   {/* <p><strong>Product ID:</strong> {selectedRow.product_id}</p>
               <p><strong>Subcategory ID:</strong> {selectedRow.subcategory_id}</p> */}
-                  <p><strong>Pcs:</strong> {selectedRow.pcs}</p>
-                  <p><strong>Piece Cost:</strong> {selectedRow.pieace_cost}</p>
-                  <p><strong>Selling Price:</strong> {selectedRow.selling_price}</p>
-                  <p><strong>Tax %:</strong> {selectedRow.tax_percent}</p>
-                  <p><strong>MRP Price:</strong> {selectedRow.mrp_price}</p>
-                  <p><strong>Total Pcs Cost:</strong> {selectedRow.total_pcs_cost}</p>
+                  <p>
+                    <strong>Pcs:</strong> {selectedRow.pcs}
+                  </p>
+                  <p>
+                    <strong>Piece Cost:</strong> {selectedRow.pieace_cost}
+                  </p>
+                  <p>
+                    <strong>Selling Price:</strong> {selectedRow.selling_price}
+                  </p>
+                  <p>
+                    <strong>Tax %:</strong> {selectedRow.tax_percent}
+                  </p>
+                  <p>
+                    <strong>MRP Price:</strong> {selectedRow.mrp_price}
+                  </p>
+                  <p>
+                    <strong>Total Pcs Cost:</strong>{" "}
+                    {selectedRow.total_pcs_cost}
+                  </p>
                 </Col>
               </Row>
               {/* </div> */}
@@ -1207,7 +1303,6 @@ const StockEntryTable = (selectedProduct) => {
           </Button>
         </Modal.Footer>
       </Modal>
-
     </div>
   );
 };
