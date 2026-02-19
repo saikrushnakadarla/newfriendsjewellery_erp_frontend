@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Col, Row, Button } from "react-bootstrap";
 import OldSalesForm from "./OldForm";
 import SchemeSalesForm from "./SchemesForm";
+import AdvanceReceiptsForm from "./AdvanceReceiptsForm";
 import SaleReturnForm from "./SaleReturnForm"; // Import the SaleReturnForm component
 import { useNavigate } from "react-router-dom";
 import './SalesForm3section.css';
@@ -42,7 +43,10 @@ const SalesFormSection = ({ setOldSalesData,
   loading,
   formatDate,
   repairs,
-  handleRepairCheckboxChange
+  handleRepairCheckboxChange,
+   onAdvanceAmountChange,
+  selectedAdvanceReceiptAmount,
+  onReceiptIdsChange
 }) => {
 
   const [activeForm, setActiveForm] = useState("old");
@@ -72,6 +76,17 @@ const SalesFormSection = ({ setOldSalesData,
             className="ms-2"
           >
             Schemes
+          </Button>
+          <Button
+            style={{
+              backgroundColor: activeForm === "advancereceipt" ? "rgb(163, 110, 41)" : "gray",
+              borderColor: activeForm === "advancereceipt" ? "rgb(163, 110, 41)" : "gray",
+              color: "white", fontSize: '13px', padding: '5px'
+            }}
+            onClick={() => setActiveForm("advancereceipt")}
+            className="ms-2"
+          >
+            Advance Receipt
           </Button>
           <Button
             style={{
@@ -128,6 +143,15 @@ const SalesFormSection = ({ setOldSalesData,
           tabId={tabId}
         />
       )}
+      {activeForm === "advancereceipt" && (
+        <AdvanceReceiptsForm
+          selectedMobile={selectedMobile} // Pass the selected mobile number
+          tabId={tabId}
+          onAdvanceAmountChange={onAdvanceAmountChange}
+        selectedAdvanceReceiptAmount={selectedAdvanceReceiptAmount}
+        onReceiptIdsChange={onReceiptIdsChange}
+        />
+      )}
       {activeForm === "orders" && (
         <Oderstable
           selectedMobile={selectedMobile}
@@ -156,7 +180,8 @@ const SalesFormSection = ({ setOldSalesData,
           formData={formData}
         />
       )}
-      {activeForm === "sale_return" && <SaleReturnForm
+      {activeForm === "sale_return" && 
+      <SaleReturnForm
         invoiceDetails={invoiceDetails}
         filteredInvoices={filteredInvoices}
         setFilteredInvoices={setFilteredInvoices}

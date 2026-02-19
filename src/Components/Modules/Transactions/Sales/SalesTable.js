@@ -219,7 +219,9 @@ const RepairsTable = () => {
                         row.original.cash_amount,
                         row.original.card_amt,
                         row.original.chq_amt,
-                        row.original.online_amt
+                        row.original.online_amt,
+                        row.original.sale_return_amt,
+                        row.original.advance_receipt_amt
                       );
                     // }
                   }}
@@ -301,13 +303,14 @@ const RepairsTable = () => {
     cash_amount,
     card_amt,
     chq_amt,
-    online_amt
+    online_amt,
+    sale_return_amt,
+    advance_receipt_amt
   ) => {
 
-    console.log("cash_amount=", cash_amount)
-    console.log("card_amt=", card_amt)
-    console.log("chq_amt=", chq_amt)
-    console.log("online_amt=", online_amt)
+    console.log("sale_return_amt=", sale_return_amt)
+    console.log("advance_receipt_amt=", advance_receipt_amt)
+
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: 'Do you want to edit this record?',
@@ -405,6 +408,8 @@ const RepairsTable = () => {
             chq_amt,
             online_amt,
             repairDetails: updatedRepairDetails, // Ensure the repair details are passed
+            sale_return_amt,
+            advance_receipt_amt,
           },
         });
 

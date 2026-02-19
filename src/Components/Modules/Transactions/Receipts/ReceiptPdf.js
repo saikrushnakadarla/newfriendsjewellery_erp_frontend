@@ -155,13 +155,13 @@ const styles = StyleSheet.create({
   },
 });
 
-const PDFContent = ({ formData }) => {
+const PDFContent = ({ formData, company }) => {
   const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true); // State for loading
   const [error, setError] = useState(null);
-  const [company, setCompany] = useState(null);
+
 
   useEffect(() => {
     const generateQRCode = async () => {
@@ -191,29 +191,8 @@ const PDFContent = ({ formData }) => {
   // Convert amount to words
   const amountInWords = toWords(parseFloat(formData.discount_amt || 0)).replace(/(^\w|\s\w)/g, (m) => m.toUpperCase());
 
-  const fetchCompanies = async () => {
-    try {
-      const response = await fetch(`${baseURL}/get/companies`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch companies');
-      }
-
-      const result = await response.json();
-
-      // API returns array with one object
-      setCompany(result[0] || null);
-
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
-  useEffect(() => {
-    fetchCompanies();
-  }, []);
+ // Format company address in one line
+        const companyAddress = `${company?.address || ""}, ${company?.address2 || ""}, ${company?.city || ""}, ${company?.state || ""} - ${company?.pincode || ""}`;
 
   return (
     <Document>

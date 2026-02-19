@@ -26,11 +26,11 @@ const SalesForm = () => {
   const [metal, setMetal] = useState("");
 
   const [oldSalesData, setOldSalesData] = useState(
-    JSON.parse(localStorage.getItem("oldSalesData")) || []
+    JSON.parse(localStorage.getItem("oldSalesData")) || [],
   );
 
   const [schemeSalesData, setSchemeSalesData] = useState(
-    JSON.parse(localStorage.getItem("schemeSalesData")) || []
+    JSON.parse(localStorage.getItem("schemeSalesData")) || [],
   );
 
   // Save to localStorage whenever data changes
@@ -103,7 +103,7 @@ const SalesForm = () => {
   useEffect(() => {
     localStorage.setItem(
       `repairDetails_${tabId}`,
-      JSON.stringify(repairDetails)
+      JSON.stringify(repairDetails),
     );
   }, [repairDetails, tabId]);
 
@@ -118,7 +118,7 @@ const SalesForm = () => {
         const filteredCustomers = result.filter(
           (item) =>
             item.account_group === "CUSTOMERS" ||
-            item.account_group === "SUPPLIERS"
+            item.account_group === "SUPPLIERS",
         );
         setCustomers(filteredCustomers);
       } catch (error) {
@@ -179,7 +179,7 @@ const SalesForm = () => {
   const handleInvoiceChange = (e) => {
     const selectedInvoiceNumber = e.target.value;
     const selectedInvoice = filteredInvoices.find(
-      (invoice) => invoice.invoice_number === selectedInvoiceNumber
+      (invoice) => invoice.invoice_number === selectedInvoiceNumber,
     );
 
     if (selectedInvoice) {
@@ -203,10 +203,10 @@ const SalesForm = () => {
     const fetchSales = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}/get-unique-repair-details`
+          `${baseURL}/get-unique-repair-details`,
         );
         const filteredData = response.data.filter(
-          (item) => item.transaction_status === "Sales"
+          (item) => item.transaction_status === "Sales",
         );
         setUniqueInvoice(filteredData);
         setFilteredInvoices(filteredData); // Initially, show all invoices
@@ -227,10 +227,10 @@ const SalesForm = () => {
 
       try {
         const response = await axios.get(
-          `${baseURL}/getsales/${returnData.invoice_number}`
+          `${baseURL}/getsales/${returnData.invoice_number}`,
         );
         const filteredData = response.data.filter(
-          (invoice) => invoice.status !== "Sale Returned"
+          (invoice) => invoice.status !== "Sale Returned",
         );
 
         setInvoiceDetails(filteredData || []); // Ensure it's always an array
@@ -238,7 +238,7 @@ const SalesForm = () => {
       } catch (error) {
         console.error(
           `Error fetching details for invoice ${returnData.invoice_number}:`,
-          error
+          error,
         );
         setInvoiceDetails([]); // Set empty array on error
       }
@@ -249,7 +249,7 @@ const SalesForm = () => {
 
   const handleCustomerChange = (customerId) => {
     const customer = customers.find(
-      (cust) => String(cust.account_id) === String(customerId)
+      (cust) => String(cust.account_id) === String(customerId),
     );
 
     if (customer) {
@@ -276,7 +276,7 @@ const SalesForm = () => {
       const filtered = uniqueInvoice.filter(
         (invoice) =>
           invoice.customer_name === customer.account_name ||
-          invoice.mobile === customer.mobile
+          invoice.mobile === customer.mobile,
       );
       setFilteredInvoices(filtered);
     } else {
@@ -462,7 +462,7 @@ const SalesForm = () => {
     setRepairDetails(updatedRepairDetails);
     localStorage.setItem(
       `repairDetails_${tabId}`,
-      JSON.stringify(updatedRepairDetails)
+      JSON.stringify(updatedRepairDetails),
     );
   };
 
@@ -758,7 +758,7 @@ const SalesForm = () => {
     setRepairDetails(updatedRepairDetails);
     localStorage.setItem(
       `repairDetails_${tabId}`,
-      JSON.stringify(updatedRepairDetails)
+      JSON.stringify(updatedRepairDetails),
     );
 
     // Mark the offer as applied
@@ -808,7 +808,7 @@ const SalesForm = () => {
 
     try {
       const response = await axios.get(
-        `${baseURL}/get-estimates/${estimate_number}`
+        `${baseURL}/get-estimates/${estimate_number}`,
       );
 
       // First, update the state with the full estimate details
@@ -825,8 +825,8 @@ const SalesForm = () => {
           stock.some(
             (stockItem) =>
               stockItem.PCode_BarCode === item.code &&
-              stockItem.Status === "Available"
-          )
+              stockItem.Status === "Available",
+          ),
         )
         .map((item) => ({
           ...item,
@@ -839,7 +839,7 @@ const SalesForm = () => {
         // Store filtered data in localStorage
         localStorage.setItem(
           `repairDetails_${tabId}`,
-          JSON.stringify(filteredData)
+          JSON.stringify(filteredData),
         );
 
         // Update state with filtered data
@@ -847,7 +847,7 @@ const SalesForm = () => {
 
         // Immediately retrieve and log stored data
         const storedData = JSON.parse(
-          localStorage.getItem(`repairDetails_${tabId}`)
+          localStorage.getItem(`repairDetails_${tabId}`),
         );
         console.log("Stored repairDetails:", storedData);
         console.log("Stored repairDetails:", repairDetails);
@@ -891,7 +891,7 @@ const SalesForm = () => {
         (item) =>
           (item.transaction_status === "Orders" ||
             item.transaction_status === "ConvertedInvoice") &&
-          item.invoice !== "Converted"
+          item.invoice !== "Converted",
       );
 
       console.log("Filtered Orders: ", filteredData);
@@ -911,18 +911,18 @@ const SalesForm = () => {
   const handleViewDetails = async (order_number) => {
     try {
       const response = await axios.get(
-        `${baseURL}/get-order-details/${order_number}`
+        `${baseURL}/get-order-details/${order_number}`,
       );
       console.log("Fetched order details: ", response.data); // Log full response data
 
       // Filter repeatedData to include only items where transaction_status is "Orders"
       const filteredData = response.data.repeatedData.filter(
-        (item) => item.transaction_status === "Orders"
+        (item) => item.transaction_status === "Orders",
       );
 
       // Check if any item in repeatedData has invoice === "Converted"
       const isInvoiceConverted = filteredData.some(
-        (item) => item.invoice === "Converted"
+        (item) => item.invoice === "Converted",
       );
       console.log("isInvoiceConverted=", isInvoiceConverted);
 
@@ -947,7 +947,7 @@ const SalesForm = () => {
   const fetchOrderDetails = async (order_number) => {
     try {
       const response = await axios.get(
-        `${baseURL}/get-order-details/${order_number}`
+        `${baseURL}/get-order-details/${order_number}`,
       );
 
       // Filter only matching repeatedData items
@@ -963,7 +963,7 @@ const SalesForm = () => {
         // Store filtered data in localStorage
         localStorage.setItem(
           `repairDetails_${tabId}`,
-          JSON.stringify(filteredData)
+          JSON.stringify(filteredData),
         );
 
         // Update state with filtered data
@@ -972,7 +972,7 @@ const SalesForm = () => {
 
         // Immediately retrieve and log stored data
         const storedData = JSON.parse(
-          localStorage.getItem(`repairDetails_${tabId}`)
+          localStorage.getItem(`repairDetails_${tabId}`),
         );
         console.log("Stored repairDetails:", storedData);
         return filteredData;
@@ -1231,7 +1231,7 @@ const SalesForm = () => {
     setRepairDetails(updatedRepairDetails);
     localStorage.setItem(
       `repairDetails_${tabId}`,
-      JSON.stringify(updatedRepairDetails)
+      JSON.stringify(updatedRepairDetails),
     );
 
     // Reset form data
@@ -1276,7 +1276,7 @@ const SalesForm = () => {
 
   const handleUpdate = () => {
     const updatedDetails = repairDetails.map((item, index) =>
-      index === editIndex ? { ...formData } : item
+      index === editIndex ? { ...formData } : item,
     );
     setRepairDetails(updatedDetails);
     setEditIndex(null);
@@ -1286,7 +1286,7 @@ const SalesForm = () => {
   const handleDelete = (indexToDelete) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       setRepairDetails(
-        repairDetails.filter((_, index) => index !== indexToDelete)
+        repairDetails.filter((_, index) => index !== indexToDelete),
       );
       alert("Product deleted successfully");
     }
@@ -1338,7 +1338,7 @@ const SalesForm = () => {
   // Calculate totalPrice (sum of total_price from all repairDetails)
   const totalPrice = repairDetails.reduce(
     (sum, item) => sum + parseFloat(item.total_price || 0),
-    0
+    0,
   );
 
   const [oldTableData, setOldTableData] = useState(() => {
@@ -1463,14 +1463,14 @@ const SalesForm = () => {
     ? parseFloat(location.state.old_exchange_amt)
     : oldSalesData.reduce(
         (sum, item) => sum + parseFloat(item.total_amount || 0),
-        0
+        0,
       );
 
   const schemeAmount = location.state?.scheme_amt
     ? parseFloat(location.state.scheme_amt)
     : schemeSalesData.reduce(
         (sum, item) => sum + parseFloat(item.paid_amount || 0),
-        0
+        0,
       );
 
   const [selectedRows, setSelectedRows] = useState([]);
@@ -1504,7 +1504,7 @@ const SalesForm = () => {
 
     try {
       const selectedInvoices = selectedRows.map(
-        (rowIndex) => invoiceDetails[rowIndex]
+        (rowIndex) => invoiceDetails[rowIndex],
       );
 
       const repairDetailsUpdates = selectedInvoices.map((invoice) => ({
@@ -1524,7 +1524,7 @@ const SalesForm = () => {
       }));
 
       const codesForAvailableEntries = selectedInvoices.map(
-        (invoice) => invoice.code
+        (invoice) => invoice.code,
       );
 
       // Execute all API calls in parallel
@@ -1541,7 +1541,7 @@ const SalesForm = () => {
 
       // Check if any API failed
       const failedRequests = responses.filter(
-        (res) => res.status === "rejected"
+        (res) => res.status === "rejected",
       );
       if (failedRequests.length > 0) {
         console.error("Some API calls failed:", failedRequests);
@@ -1596,12 +1596,16 @@ const SalesForm = () => {
   };
 
   const allSelectedRowsAreThisMonth = selectedRows.every((rowIndex) =>
-    isSameMonth(invoiceDetails[rowIndex]?.date)
+    isSameMonth(invoiceDetails[rowIndex]?.date),
   );
 
   const salesAmountToPass = allSelectedRowsAreThisMonth
     ? salesNetAmount
     : salesTaxableAmount;
+
+  const [selectedAdvanceReceiptAmount, setSelectedAdvanceReceiptAmount] = useState(location.state?.advance_receipt_amt || 0);
+  // Add this state with your other states
+const [selectedReceiptIds, setSelectedReceiptIds] = useState([]);
 
   let totalAmount = 0;
   let discountAmt = 0;
@@ -1841,7 +1845,7 @@ const SalesForm = () => {
       const itemTaxableBeforeFestival = itemNet / (1 + itemTaxPercent / 100);
       const itemTaxable = Math.max(
         0,
-        itemTaxableBeforeFestival - itemFestivalDiscount
+        itemTaxableBeforeFestival - itemFestivalDiscount,
       );
       const itemTax = itemTaxable * (itemTaxPercent / 100);
 
@@ -1877,7 +1881,7 @@ const SalesForm = () => {
   //   ? manualNetPayAmount
   //   : netAmount - (schemeAmount + oldItemsAmount + salesAmountToPass);
 
-  const netPayableAmount = isManualNetMode ? manualNetPayAmount : netAmount;
+  const netPayableAmount = isManualNetMode ? manualNetPayAmount :  netAmount - (schemeAmount + salesAmountToPass + selectedAdvanceReceiptAmount);
   const netPayAmount = netPayableAmount;
 
   const [paymentDetails, setPaymentDetails] = useState({
@@ -1891,14 +1895,14 @@ const SalesForm = () => {
   useEffect(() => {
     localStorage.setItem(
       `paymentDetails_${tabId}`,
-      JSON.stringify(paymentDetails)
+      JSON.stringify(paymentDetails),
     );
   }, [paymentDetails]);
 
   useEffect(() => {
     // Retrieve payment details from localStorage on component mount
     const storedPaymentDetails = localStorage.getItem(
-      `paymentDetails_${tabId}`
+      `paymentDetails_${tabId}`,
     );
     if (storedPaymentDetails) {
       setPaymentDetails(JSON.parse(storedPaymentDetails));
@@ -1968,158 +1972,332 @@ const SalesForm = () => {
     fetchCompanies();
   }, []);
 
+  // const handleSave = async () => {
+  //   if (!formData.account_name || !formData.mobile) {
+  //     alert("Please select the Customer or enter the Customer Mobile Number");
+  //     return;
+  //   }
+
+  //   try {
+  //     // Fetch tags
+  //     const tagResponse = await fetch(`${baseURL}/get/opening-tags-entry`);
+  //     const tagResult = await tagResponse.json();
+  //     const tagData = tagResult.result || [];
+
+  //     // Check for sold items
+  //     const soldItem = repairDetails.find((item) => {
+  //       const matchedTag = tagData.find(
+  //         (data) => data.PCode_BarCode === item.code && data.Status === "Sold",
+  //       );
+  //       return matchedTag !== undefined;
+  //     });
+
+  //     // Optional: re-enable if needed
+  //     // if (soldItem) {
+  //     //   alert(`Item with code "${soldItem.code}" is already sold out.`);
+  //     //   return;
+  //     // }
+
+  //     // Handle invoice number
+  //     const allItemsAreNew = repairDetails.every((item) => item.id === "");
+  //     let updatedFormData = { ...formData };
+
+  //     if (allItemsAreNew) {
+  //       const response = await axios.get(`${baseURL}/lastInvoiceNumber`);
+  //       const latestInvoiceNumber = response.data.lastInvoiceNumber;
+
+  //       updatedFormData = {
+  //         ...formData,
+  //         invoice_number: latestInvoiceNumber,
+  //       };
+
+  //       setFormData(updatedFormData);
+  //     }
+
+  //     // Prepare payload
+  //     const dataToSave = {
+  //       repairDetails: repairDetails.map((item) => ({
+  //         ...item,
+  //         invoice_number: updatedFormData.invoice_number,
+  //         customer_id: updatedFormData.customer_id,
+  //         mobile: updatedFormData.mobile,
+  //         account_name: updatedFormData.account_name,
+  //         email: updatedFormData.email,
+  //         address1: updatedFormData.address1,
+  //         address2: updatedFormData.address2,
+  //         city: updatedFormData.city,
+  //         pincode: updatedFormData.pincode,
+  //         state: updatedFormData.state,
+  //         state_code: updatedFormData.state_code,
+  //         aadhar_card: updatedFormData.aadhar_card,
+  //         gst_in: updatedFormData.gst_in,
+  //         pan_card: updatedFormData.pan_card,
+  //         terms: updatedFormData.terms,
+  //         cash_amount: paymentDetails.cash_amount || 0,
+  //         card_amt: paymentDetails.card_amt || 0,
+  //         chq_amt: paymentDetails.chq_amt || 0,
+  //         online_amt: paymentDetails.online_amt || 0,
+  //       })),
+  //       totalAmount: totalAmount,
+  //       discountAmt: discountAmt,
+  //       festivalDiscountAmt: festivalDiscountAmt,
+  //       taxableAmount: taxableAmount,
+  //       taxAmount: taxAmount,
+  //       netAmount: netAmount,
+  //       oldItems: oldSalesData,
+  //       memberSchemes: schemeSalesData,
+  //       oldItemsAmount: oldItemsAmount || 0,
+  //       schemeAmount: schemeAmount || 0,
+  //       salesNetAmount: salesAmountToPass || 0,
+  //       salesTaxableAmount: salesTaxableAmount || 0,
+  //       selectedAdvanceReceiptAmount:selectedAdvanceReceiptAmount || 0,
+  //     };
+
+  //     await axios.post(`${baseURL}/save-repair-details`, dataToSave);
+  //     alert("Sales added successfully");
+
+  //     // Generate PDF
+  //     const pdfDoc = (
+  //       <PDFLayout
+  //         formData={updatedFormData}
+  //         repairDetails={repairDetails}
+  //         cash_amount={paymentDetails.cash_amount || 0}
+  //         card_amt={paymentDetails.card_amt || 0}
+  //         chq_amt={paymentDetails.chq_amt || 0}
+  //         online_amt={paymentDetails.online_amt || 0}
+  //         taxableAmount={taxableAmount}
+  //         taxAmount={taxAmount}
+  //         discountAmt={discountAmt}
+  //         festivalDiscountAmt={festivalDiscountAmt}
+  //         oldItemsAmount={oldItemsAmount}
+  //         schemeAmount={schemeAmount}
+  //         salesNetAmount={salesAmountToPass}
+  //         salesTaxableAmount={salesTaxableAmount}
+  //         selectedAdvanceReceiptAmount={selectedAdvanceReceiptAmount}
+  //         netAmount={netAmount}
+  //         netPayableAmount={netPayableAmount}
+  //         company={company}
+  //         product={product}
+  //       />
+  //     );
+
+  //     const pdfBlob = await pdf(pdfDoc).toBlob();
+
+  //     // Save PDF to server
+  //     await handleSavePDFToServer(pdfBlob, updatedFormData.invoice_number);
+
+  //     // Open preview in new tab
+  //     const previewURL = `${baseURL}/invoices/${updatedFormData.invoice_number}.pdf`;
+  //     window.open(previewURL, "_blank");
+
+  //     // Attempt to share
+  //     const pdfFile = new File(
+  //       [pdfBlob],
+  //       `${updatedFormData.invoice_number}.pdf`,
+  //       {
+  //         type: "application/pdf",
+  //       },
+  //     );
+
+  //     if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+  //       try {
+  //         await navigator.share({
+  //           title: `Invoice ${updatedFormData.invoice_number}`,
+  //           text: "Here is your invoice PDF.",
+  //           files: [pdfFile],
+  //         });
+  //         console.log("PDF shared successfully");
+  //       } catch (err) {
+  //         console.warn("Sharing was cancelled or failed:", err);
+  //       }
+  //     } else {
+  //       console.warn("Sharing not supported on this device/browser.");
+  //     }
+
+  //     // Cleanup
+  //     clearData();
+  //     resetForm();
+  //     navigate("/salestable");
+  //     window.location.reload();
+  //     await handleCheckout();
+  //   } catch (error) {
+  //     console.error("Error saving data:", error);
+  //     alert("Error saving data");
+  //   }
+  // };
+
   const handleSave = async () => {
-    if (!formData.account_name || !formData.mobile) {
-      alert("Please select the Customer or enter the Customer Mobile Number");
-      return;
-    }
+  if (!formData.account_name || !formData.mobile) {
+    alert("Please select the Customer or enter the Customer Mobile Number");
+    return;
+  }
 
-    try {
-      // Fetch tags
-      const tagResponse = await fetch(`${baseURL}/get/opening-tags-entry`);
-      const tagResult = await tagResponse.json();
-      const tagData = tagResult.result || [];
+  try {
+    // Fetch tags
+    const tagResponse = await fetch(`${baseURL}/get/opening-tags-entry`);
+    const tagResult = await tagResponse.json();
+    const tagData = tagResult.result || [];
 
-      // Check for sold items
-      const soldItem = repairDetails.find((item) => {
-        const matchedTag = tagData.find(
-          (data) => data.PCode_BarCode === item.code && data.Status === "Sold"
-        );
-        return matchedTag !== undefined;
-      });
+    // Check for sold items
+    const soldItem = repairDetails.find((item) => {
+      const matchedTag = tagData.find(
+        (data) => data.PCode_BarCode === item.code && data.Status === "Sold",
+      );
+      return matchedTag !== undefined;
+    });
 
-      // Optional: re-enable if needed
-      // if (soldItem) {
-      //   alert(`Item with code "${soldItem.code}" is already sold out.`);
-      //   return;
-      // }
+    // Optional: re-enable if needed
+    // if (soldItem) {
+    //   alert(`Item with code "${soldItem.code}" is already sold out.`);
+    //   return;
+    // }
 
-      // Handle invoice number
-      const allItemsAreNew = repairDetails.every((item) => item.id === "");
-      let updatedFormData = { ...formData };
+    // Handle invoice number
+    const allItemsAreNew = repairDetails.every((item) => item.id === "");
+    let updatedFormData = { ...formData };
 
-      if (allItemsAreNew) {
-        const response = await axios.get(`${baseURL}/lastInvoiceNumber`);
-        const latestInvoiceNumber = response.data.lastInvoiceNumber;
+    if (allItemsAreNew) {
+      const response = await axios.get(`${baseURL}/lastInvoiceNumber`);
+      const latestInvoiceNumber = response.data.lastInvoiceNumber;
 
-        updatedFormData = {
-          ...formData,
-          invoice_number: latestInvoiceNumber,
-        };
-
-        setFormData(updatedFormData);
-      }
-
-      // Prepare payload
-      const dataToSave = {
-        repairDetails: repairDetails.map((item) => ({
-          ...item,
-          invoice_number: updatedFormData.invoice_number,
-          customer_id: updatedFormData.customer_id,
-          mobile: updatedFormData.mobile,
-          account_name: updatedFormData.account_name,
-          email: updatedFormData.email,
-          address1: updatedFormData.address1,
-          address2: updatedFormData.address2,
-          city: updatedFormData.city,
-          pincode: updatedFormData.pincode,
-          state: updatedFormData.state,
-          state_code: updatedFormData.state_code,
-          aadhar_card: updatedFormData.aadhar_card,
-          gst_in: updatedFormData.gst_in,
-          pan_card: updatedFormData.pan_card,
-          terms: updatedFormData.terms,
-          cash_amount: paymentDetails.cash_amount || 0,
-          card_amt: paymentDetails.card_amt || 0,
-          chq_amt: paymentDetails.chq_amt || 0,
-          online_amt: paymentDetails.online_amt || 0,
-        })),
-        totalAmount:totalAmount,
-        discountAmt:discountAmt,
-        festivalDiscountAmt:festivalDiscountAmt,
-        taxableAmount: taxableAmount,
-        taxAmount: taxAmount,
-        netAmount:netAmount,
-        oldItems: oldSalesData,
-        memberSchemes: schemeSalesData,
-        oldItemsAmount: oldItemsAmount || 0,
-        schemeAmount: schemeAmount || 0,
-        salesNetAmount: salesAmountToPass || 0,
-        salesTaxableAmount: salesTaxableAmount || 0,
+      updatedFormData = {
+        ...formData,
+        invoice_number: latestInvoiceNumber,
       };
 
-      await axios.post(`${baseURL}/save-repair-details`, dataToSave);
-      alert("Sales added successfully");
-
-      // Generate PDF
-      const pdfDoc = (
-        <PDFLayout
-          formData={updatedFormData}
-          repairDetails={repairDetails}
-          cash_amount={paymentDetails.cash_amount || 0}
-          card_amt={paymentDetails.card_amt || 0}
-          chq_amt={paymentDetails.chq_amt || 0}
-          online_amt={paymentDetails.online_amt || 0}
-          taxableAmount={taxableAmount}
-          taxAmount={taxAmount}
-          discountAmt={discountAmt}
-          festivalDiscountAmt={festivalDiscountAmt}
-          oldItemsAmount={oldItemsAmount}
-          schemeAmount={schemeAmount}
-          salesNetAmount={salesAmountToPass}
-          salesTaxableAmount={salesTaxableAmount}
-          netAmount={netAmount}
-          netPayableAmount={netPayableAmount}
-          company={company}
-          product={product}
-        />
-      );
-
-      const pdfBlob = await pdf(pdfDoc).toBlob();
-
-      // Save PDF to server
-      await handleSavePDFToServer(pdfBlob, updatedFormData.invoice_number);
-
-      // Open preview in new tab
-      const previewURL = `${baseURL}/invoices/${updatedFormData.invoice_number}.pdf`;
-      window.open(previewURL, "_blank");
-
-      // Attempt to share
-      const pdfFile = new File(
-        [pdfBlob],
-        `${updatedFormData.invoice_number}.pdf`,
-        {
-          type: "application/pdf",
-        }
-      );
-
-      if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-        try {
-          await navigator.share({
-            title: `Invoice ${updatedFormData.invoice_number}`,
-            text: "Here is your invoice PDF.",
-            files: [pdfFile],
-          });
-          console.log("PDF shared successfully");
-        } catch (err) {
-          console.warn("Sharing was cancelled or failed:", err);
-        }
-      } else {
-        console.warn("Sharing not supported on this device/browser.");
-      }
-
-      // Cleanup
-      clearData();
-      resetForm();
-      navigate("/salestable");
-      window.location.reload();
-      await handleCheckout();
-    } catch (error) {
-      console.error("Error saving data:", error);
-      alert("Error saving data");
+      setFormData(updatedFormData);
     }
-  };
 
+    // Prepare payload
+    const dataToSave = {
+      repairDetails: repairDetails.map((item) => ({
+        ...item,
+        invoice_number: updatedFormData.invoice_number,
+        customer_id: updatedFormData.customer_id,
+        mobile: updatedFormData.mobile,
+        account_name: updatedFormData.account_name,
+        email: updatedFormData.email,
+        address1: updatedFormData.address1,
+        address2: updatedFormData.address2,
+        city: updatedFormData.city,
+        pincode: updatedFormData.pincode,
+        state: updatedFormData.state,
+        state_code: updatedFormData.state_code,
+        aadhar_card: updatedFormData.aadhar_card,
+        gst_in: updatedFormData.gst_in,
+        pan_card: updatedFormData.pan_card,
+        terms: updatedFormData.terms,
+        cash_amount: paymentDetails.cash_amount || 0,
+        card_amt: paymentDetails.card_amt || 0,
+        chq_amt: paymentDetails.chq_amt || 0,
+        online_amt: paymentDetails.online_amt || 0,
+      })),
+      totalAmount: totalAmount,
+      discountAmt: discountAmt,
+      festivalDiscountAmt: festivalDiscountAmt,
+      taxableAmount: taxableAmount,
+      taxAmount: taxAmount,
+      netAmount: netAmount,
+      oldItems: oldSalesData,
+      memberSchemes: schemeSalesData,
+      oldItemsAmount: oldItemsAmount || 0,
+      schemeAmount: schemeAmount || 0,
+      salesNetAmount: salesAmountToPass || 0,
+      salesTaxableAmount: salesTaxableAmount || 0,
+      selectedAdvanceReceiptAmount: selectedAdvanceReceiptAmount || 0,
+    };
+
+    // Save repair details first
+    const saveResponse = await axios.post(`${baseURL}/save-repair-details`, dataToSave);
+    
+    // After saving repair details, update the advance receipts with the invoice number
+    if (selectedAdvanceReceiptAmount > 0 && selectedReceiptIds && selectedReceiptIds.length > 0) {
+      try {
+        await axios.post(`${baseURL}/update-advance-receipts`, {
+          receiptIds: selectedReceiptIds,
+          invoiceNumber: updatedFormData.invoice_number,
+          mobile: formData.mobile,
+          account_name: formData.account_name
+        });
+        console.log("Advance receipts updated successfully");
+      } catch (updateError) {
+        console.error("Error updating advance receipts:", updateError);
+        // Optionally show warning but don't block the main flow
+        alert("Warning: Advance receipts could not be updated, but invoice was saved.");
+      }
+    }
+
+    alert("Sales added successfully");
+
+    // Generate PDF
+    const pdfDoc = (
+      <PDFLayout
+        formData={updatedFormData}
+        repairDetails={repairDetails}
+        cash_amount={paymentDetails.cash_amount || 0}
+        card_amt={paymentDetails.card_amt || 0}
+        chq_amt={paymentDetails.chq_amt || 0}
+        online_amt={paymentDetails.online_amt || 0}
+        taxableAmount={taxableAmount}
+        taxAmount={taxAmount}
+        discountAmt={discountAmt}
+        festivalDiscountAmt={festivalDiscountAmt}
+        oldItemsAmount={oldItemsAmount}
+        schemeAmount={schemeAmount}
+        salesNetAmount={salesAmountToPass}
+        salesTaxableAmount={salesTaxableAmount}
+        selectedAdvanceReceiptAmount={selectedAdvanceReceiptAmount}
+        netAmount={netAmount}
+        netPayableAmount={netPayableAmount}
+        company={company}
+        product={product}
+      />
+    );
+
+    const pdfBlob = await pdf(pdfDoc).toBlob();
+
+    // Save PDF to server
+    await handleSavePDFToServer(pdfBlob, updatedFormData.invoice_number);
+
+    // Open preview in new tab
+    const previewURL = `${baseURL}/invoices/${updatedFormData.invoice_number}.pdf`;
+    window.open(previewURL, "_blank");
+
+    // Attempt to share
+    const pdfFile = new File(
+      [pdfBlob],
+      `${updatedFormData.invoice_number}.pdf`,
+      {
+        type: "application/pdf",
+      },
+    );
+
+    if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+      try {
+        await navigator.share({
+          title: `Invoice ${updatedFormData.invoice_number}`,
+          text: "Here is your invoice PDF.",
+          files: [pdfFile],
+        });
+        console.log("PDF shared successfully");
+      } catch (err) {
+        console.warn("Sharing was cancelled or failed:", err);
+      }
+    } else {
+      console.warn("Sharing not supported on this device/browser.");
+    }
+
+    // Cleanup
+    clearData();
+    resetForm();
+    navigate("/salestable");
+    window.location.reload();
+    await handleCheckout();
+  } catch (error) {
+    console.error("Error saving data:", error);
+    alert("Error saving data");
+  }
+};
   const handleSavePDFToServer = async (pdfBlob, invoiceNumber) => {
     const formData = new FormData();
     formData.append("invoice", pdfBlob, `${invoiceNumber}.pdf`);
@@ -2402,6 +2580,10 @@ const SalesForm = () => {
                 formatDate={formatDate}
                 repairs={repairs}
                 handleRepairCheckboxChange={handleRepairCheckboxChange}
+                // Pass these new props
+                onAdvanceAmountChange={setSelectedAdvanceReceiptAmount}
+                selectedAdvanceReceiptAmount={selectedAdvanceReceiptAmount}
+                onReceiptIdsChange={setSelectedReceiptIds}
               />
             </div>
             <div className="sales-form-fourth">
@@ -2451,6 +2633,8 @@ const SalesForm = () => {
                 manualNetPayAmount={manualNetPayAmount}
                 handleApply={handleApply}
                 isAnyOfferApplied={isAnyOfferApplied}
+                // Pass the selected advance amount
+                selectedAdvanceReceiptAmount={selectedAdvanceReceiptAmount}
               />
             </div>
           </div>

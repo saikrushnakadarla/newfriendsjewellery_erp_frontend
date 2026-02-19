@@ -1,7 +1,13 @@
-import React from 'react'
-import Salesform from './SaleReturnSaleform'
+import React from "react";
+import Salesform from "./SaleReturnSaleform";
 
-const SaleReturnForm = ({ invoiceDetails, filteredInvoices, setFilteredInvoices, uniqueInvoice, handleInvoiceChange, setReturnData,
+const SaleReturnForm = ({
+  invoiceDetails,
+  filteredInvoices,
+  setFilteredInvoices,
+  uniqueInvoice,
+  handleInvoiceChange,
+  setReturnData,
   returnData,
   selectedRows,
   setSelectedRows,
@@ -13,9 +19,9 @@ const SaleReturnForm = ({ invoiceDetails, filteredInvoices, setFilteredInvoices,
   salesTaxAmount,
   salesNetAmount,
   resetSaleReturnForm,
-  handleCheckout
+  handleCheckout,
 }) => {
-  console.log("FilteredInvoices=", filteredInvoices)
+  console.log("FilteredInvoices=", filteredInvoices);
   return (
     <div>
       {/* <h4>SaleReturn Form</h4> */}
@@ -27,9 +33,9 @@ const SaleReturnForm = ({ invoiceDetails, filteredInvoices, setFilteredInvoices,
         returnData={returnData}
         setReturnData={setReturnData}
         selectedRows={selectedRows}
-                setSelectedRows={setSelectedRows}
-                isAllSelected={isAllSelected}
-                setIsAllSelected={setIsAllSelected}
+        setSelectedRows={setSelectedRows}
+        isAllSelected={isAllSelected}
+        setIsAllSelected={setIsAllSelected}
         handleCheckboxChange={handleCheckboxChange}
         handleSelectAllChange={handleSelectAllChange}
         salesTaxableAmount={salesTaxableAmount}
@@ -39,7 +45,7 @@ const SaleReturnForm = ({ invoiceDetails, filteredInvoices, setFilteredInvoices,
         handleCheckout={handleCheckout}
       />
     </div>
-  )
-}
+  );
+};
 
-export default SaleReturnForm
+export default SaleReturnForm;

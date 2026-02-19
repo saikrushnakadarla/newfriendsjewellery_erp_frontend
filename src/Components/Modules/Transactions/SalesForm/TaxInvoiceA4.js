@@ -326,6 +326,7 @@ const TaxINVoiceReceipt = ({
         schemeAmount,
         salesNetAmount,
         salesTaxableAmount,
+        selectedAdvanceReceiptAmount,
         netAmount,
         netPayableAmount,
         product,
@@ -786,6 +787,10 @@ const TaxINVoiceReceipt = ({
                                                                         <View style={styles.summaryItem}>
                                                                                 <Text>(-) SALE RETURN:</Text>
                                                                                 <Text>{salesNetAmount.toFixed(2)}</Text>
+                                                                        </View>
+                                                                        <View style={styles.summaryItem}>
+                                                                                <Text>(-) ADVANCE RECEIPT:</Text>
+                                                                                <Text>{selectedAdvanceReceiptAmount.toFixed(2)}</Text>
                                                                         </View>
                                                                         <View style={styles.summaryItem}>
                                                                                 <Text>Net Amount:</Text>
