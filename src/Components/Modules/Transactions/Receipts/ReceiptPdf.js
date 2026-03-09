@@ -9,7 +9,6 @@ const styles = StyleSheet.create({
   page: {
     padding: 5,
     fontSize: 8,
-    fontFamily: "Helvetica",
   },
   section: {
     marginBottom: 10,
@@ -23,7 +22,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   image1: {
-    height: 50,
+    width: '90%',
+    height: 100,
+    marginTop: 0,
+  },
+  image2: {
     marginTop: 0,
   },
   divider: {
@@ -36,7 +39,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     padding: 20,
-    marginTop: -60,
+    marginTop: -10,
   },
   heading: {
     fontWeight: 'bold',
@@ -94,8 +97,7 @@ const styles = StyleSheet.create({
   },
   boxContainer: {
     width: '100%',
-    height: 200,
-    marginTop: 5,
+    height: '100%',
     border: '1px solid black',
     marginBottom: 20,
   },
@@ -121,22 +123,30 @@ const styles = StyleSheet.create({
   tableCellHeader: {
     width: '10%',
     textAlign: 'center',
+    marginTop: '-4'
   },
   tableCellDescription: {
     width: '30%',
     textAlign: 'center',
+    marginTop: '-4'
   },
   tableCellTotalAmt: {
     width: '20%',
     textAlign: 'right',
+    marginTop: '-4'
   },
   tableCellBalanceAmt: {
     width: '20%',
     textAlign: 'right',
+    marginTop: '-4'
   },
   tableCellPaidAmt: {
     width: '20%',
     textAlign: 'right',
+    marginTop: '-4'
+  },
+  lastheight: {
+    height: 28,
   },
   qrCodeContainer: {
     alignItems: "center",
@@ -153,15 +163,107 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontStyle: 'italic',
   },
+  // New styles for the updated layout
+  logoContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  companyAddress: {
+    textAlign: 'center',
+    fontSize: 8,
+    marginBottom: 10,
+    fontFamily: 'Times-Bold',
+  },
+  detailsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  leftContainer: {
+    width: '2%',
+    paddingRight: 10,
+    fontFamily: 'Times-Bold',
+  },
+  customerDetails: {
+    width: '56%',
+    paddingRight: 10,
+    fontFamily: 'Times-Bold',
+  },
+  receiptDetails: {
+    width: '30%',
+    paddingLeft: 10,
+    fontFamily: 'Times-Bold',
+  },
+  detailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  detailLabel: {
+    flex: 1,
+  },
+  detailValue: {
+    textAlign: "right",
+    flex: 1,
+  },
+  // New styles for summary section
+  summaryContainer: {
+    marginTop: 10,
+    width: '100%',
+  },
+  summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    fontFamily: 'Times-Bold',
+  },
+  summaryLeft: {
+    width: '50%',
+    paddingLeft: 10,
+  },
+  summaryRight: {
+    width: '50%',
+    paddingRight: 10,
+  },
+  summaryItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 3,
+  },
+  // Items container
+  itemsContainer: {
+    minHeight: 200,
+    flexDirection: 'column',
+  },
+  // Filler rows
+  fillerRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    height: 22,
+  },
+  fillerCellHeader: {
+    width: '10%',
+  },
+  fillerCellDescription: {
+    width: '30%',
+  },
+  fillerCellTotalAmt: {
+    width: '20%',
+  },
+  fillerCellBalanceAmt: {
+    width: '20%',
+  },
+  fillerCellPaidAmt: {
+    width: '20%',
+  },
 });
 
 const PDFContent = ({ formData, company }) => {
   const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [companies, setCompanies] = useState([]);
-  const [loading, setLoading] = useState(true); // State for loading
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
 
   useEffect(() => {
     const generateQRCode = async () => {
@@ -191,176 +293,184 @@ const PDFContent = ({ formData, company }) => {
   // Convert amount to words
   const amountInWords = toWords(parseFloat(formData.discount_amt || 0)).replace(/(^\w|\s\w)/g, (m) => m.toUpperCase());
 
- // Format company address in one line
-        const companyAddress = `${company?.address || ""}, ${company?.address2 || ""}, ${company?.city || ""}, ${company?.state || ""} - ${company?.pincode || ""}`;
+  // Format company address in one line
+  const companyAddress = `${company?.address || ""}, ${company?.address2 || ""}, ${company?.city || ""}, ${company?.state || ""} - ${company?.pincode || ""}`;
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* First Row */}
-        <View style={styles.row}>
-          <View style={[styles.column, { marginTop: 20, width: "20%", marginLeft: 20, fontFamily: "Times-Bold" }]}>
+        {/* Logo covering full width at the top */}
+        <View style={styles.logoContainer}>
+          <Image style={styles.image1} src={logo1} />
+        </View>
+
+        {/* Company address in one line below logo */}
+        <View style={styles.companyAddress}>
+          <Text>{companyAddress}</Text>
+        </View>
+
+        {/* Customer Details (Left) and Receipt Details (Right) side by side */}
+        <View style={styles.detailsContainer}>
+          {/* Left Column - Customer Details */}
+          <View style={styles.leftContainer}></View>
+          <View style={styles.customerDetails}>
             <Text style={[styles.boldText, { marginBottom: 5 }]}>CUSTOMER DETAILS:</Text>
-            <Text style={{ marginBottom: 5 }}>{formData.account_name || "N/A"},</Text>
-            <Text style={{ marginBottom: 5 }}>MOBILE: {formData.mobile || "N/A"}</Text>
+            <Text style={{ marginBottom: 4 }}>{formData.account_name || "N/A"},</Text>
+            <Text style={{ marginBottom: 4 }}>MOBILE: {formData.mobile || "N/A"}</Text>
           </View>
 
-          <View style={[styles.column, { width: "40%" }]}>
-            <Image style={styles.image1} src={logo1} />
-          </View>
-
-          <View style={[styles.column, { width: "10%" }]}></View>
-
-          <View style={[styles.column, { marginTop: 0, width: "20%", marginLeft: 20, fontFamily: "Times-Bold" }]}>
-            <Text style={{ fontWeight: "bold", fontSize: 12, marginBottom: 10, marginLeft: 20 }}>RECEIPT</Text>
+          {/* Right Column - Receipt Details */}
+          <View style={styles.receiptDetails}>
+            <Text style={{ fontWeight: "bold", fontSize: 12, marginBottom: 10, textAlign: 'center' }}>RECEIPT</Text>
 
             {/* RECEIPT NO */}
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
-              <Text>RECEIPT NO:</Text>
-              <Text style={{ textAlign: "right", flex: 1 }}>{formData.receipt_no || "N/A"}</Text>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>RECEIPT NO:</Text>
+              <Text style={styles.detailValue}>{formData.receipt_no || "N/A"}</Text>
             </View>
 
             {/* DATE */}
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
-              <Text>DATE:</Text>
-              <Text style={{ textAlign: "right", flex: 1 }}>{formatDate(formData.date)}</Text>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>DATE:</Text>
+              <Text style={styles.detailValue}>{formatDate(formData.date)}</Text>
             </View>
 
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
-              <Text>TIME:</Text>
-              <Text style={{ textAlign: "right", flex: 1 }}>{currentTime}</Text>
+            {/* TIME */}
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>TIME:</Text>
+              <Text style={styles.detailValue}>{currentTime}</Text>
             </View>
-
-            {/* STAFF */}
-            {/* <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
-              <Text>STAFF:</Text>
-              <Text style={{ textAlign: "right", flex: 1 }}>New Friend's Jewellery</Text>
-            </View> */}
 
             {/* GSTIN */}
             {company && (
-              <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
-                <Text>GSTIN:</Text>
-                <Text style={{ textAlign: "right", flex: 1 }}>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>GSTIN:</Text>
+                <Text style={styles.detailValue}>
                   {company?.gst_no || "N/A"}
                 </Text>
               </View>
             )}
+
+            {/* Contact Info */}
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>MOBILE:</Text>
+              <Text style={styles.detailValue}>{company?.mobile || ""}</Text>
+            </View>
           </View>
+          <View style={styles.leftContainer}></View>
         </View>
 
+        {/* Rest of the content */}
         <View style={styles.container}>
-          {/* Centered Heading */}
-          <Text style={[styles.heading, { fontFamily: 'Times-Bold' }]}>
-            {company?.company_name?.toUpperCase() || ""}
-          </Text>
-
-          <View style={styles.contentContainer}>
-
-            <View style={styles.leftColumn}>
-              <Text style={styles.flatNo}>
-                Flat No : {company?.address || ""}
-              </Text>
-
-              <Text style={styles.cin}>
-                Road/Street: {company?.address2 || ""}
-              </Text>
-
-              <Text style={styles.cin}>
-                {company?.city || ""}, {company?.state || ""} - {company?.pincode || ""}
-              </Text>
-            </View>
-
-            {/* Vertical Divider */}
-            <View style={styles.divider1} />
-
-            {/* Branch Section */}
-            <View style={styles.rightColumn}>
-              <Text style={[styles.branch, { fontFamily: 'Times-Bold' }]}>BRANCH:</Text>
-
-              <Text style={styles.branchContent}>
-                {company?.address || ""},
-              </Text>
-
-              <Text style={styles.branchContent}>
-                {company?.address2 || ""},
-              </Text>
-
-              <Text style={styles.branchContent}>
-                {company?.city || ""}, {company?.state || ""} - {company?.pincode || ""}
-              </Text>
-            </View>
-          </View>
-
-          {/* Horizontal Divider under both sections */}
-          <View style={styles.horizontalLine1} />
-
-          <View>
-            <Text>
-              Mob : {company?.mobile?.toUpperCase() || ""}
-            </Text>
-          </View>
-
           <View style={styles.boxContainer}>
             {/* Table Header */}
             <View style={[styles.tableRow, { fontFamily: 'Times-Bold', borderBottomWidth: 1, borderBottomColor: '#000' }]}>
               <Text style={[styles.tableCell, styles.tableCellHeader]}>S.No.</Text>
-              <View style={[styles.divider1, { height: '100%' }]} />
+              <View style={styles.divider1} />
               <Text style={[styles.tableCell, styles.tableCellDescription]}>Invoice ID</Text>
-              <View style={[styles.divider1, { height: '100%' }]} />
+              <View style={styles.divider1} />
               <Text style={[styles.tableCell, styles.tableCellTotalAmt]}>Total Amt</Text>
-              <View style={[styles.divider1, { height: '100%' }]} />
+              <View style={styles.divider1} />
               <Text style={[styles.tableCell, styles.tableCellBalanceAmt]}>Paid Amt</Text>
-              <View style={[styles.divider1, { height: '100%' }]} />
+              <View style={styles.divider1} />
               <Text style={[styles.tableCell, styles.tableCellPaidAmt]}>Bal Amt</Text>
-            </View>
-
-            {/* Table Row */}
-            <View style={[styles.tableRow, { fontFamily: 'Times-Roman', borderBottomWidth: 1, borderBottomColor: '#000' }]}>
-              <Text style={[styles.tableCell, styles.tableCellHeader]}>1</Text>
-              <View style={[styles.divider1, { height: '100%' }]} />
-              <Text style={[styles.tableCell, styles.tableCellDescription]}>{formData.invoice_number || "N/A"}</Text>
-              <View style={[styles.divider1, { height: '100%' }]} />
-              <Text style={[styles.tableCell, styles.tableCellTotalAmt]}>{formData.total_amt || "0.00"}</Text>
-              <View style={[styles.divider1, { height: '100%' }]} />
-              <Text style={[styles.tableCell, styles.tableCellBalanceAmt]}>{formData.discount_amt || "0.00"}</Text>
-              <View style={[styles.divider1, { height: '100%' }]} />
-              <Text style={[styles.tableCell, styles.tableCellPaidAmt]}>{formData.cash_amt || "0.00"}</Text>
-            </View>
-
-            {/* Footer Row */}
-            <View style={[styles.tableRow, { fontFamily: 'Times-Bold', borderBottomWidth: 1, borderBottomColor: '#000' }]}>
-              <Text style={[styles.tableCell, styles.tableCellHeader]}></Text>
-              <View style={[styles.divider1, { height: '100%' }]} />
-              <Text style={[styles.tableCell, styles.tableCellDescription]}>Total</Text>
-              <View style={[styles.divider1, { height: '100%' }]} />
-              <Text style={[styles.tableCell, styles.tableCellTotalAmt]}>{formData.total_amt || "0.00"}</Text>
-              <View style={[styles.divider1, { height: '100%' }]} />
-              <Text style={[styles.tableCell, styles.tableCellBalanceAmt]}>{formData.discount_amt || "0.00"}</Text>
-              <View style={[styles.divider1, { height: '100%' }]} />
-              <Text style={[styles.tableCell, styles.tableCellPaidAmt]}>{formData.cash_amt || "0.00"}</Text>
             </View>
             <View style={styles.horizontalLine} />
 
-            {/* Amount in words */}
-            <Text style={styles.amountInWords}>
-              Rupees {amountInWords} Only
-            </Text>
+            {/* Items container with actual items */}
+            <View style={styles.itemsContainer}>
+              {/* Table Row */}
+              <View style={[styles.tableRow, { fontFamily: 'Times-Roman', borderBottomWidth: 1, borderBottomColor: '#000' }]}>
+                <Text style={[styles.tableCell, styles.tableCellHeader]}>1</Text>
+                <View style={[styles.divider1, { marginTop: -2 }]} />
+                <Text style={[styles.tableCell, styles.tableCellDescription]}>{formData.invoice_number || "N/A"}</Text>
+                <View style={[styles.divider1, { marginTop: -2 }]} />
+                <Text style={[styles.tableCell, styles.tableCellTotalAmt]}>{formData.total_amt || "0.00"}</Text>
+                <View style={[styles.divider1, { marginTop: -2 }]} />
+                <Text style={[styles.tableCell, styles.tableCellBalanceAmt]}>{formData.discount_amt || "0.00"}</Text>
+                <View style={[styles.divider1, { marginTop: -2 }]} />
+                <Text style={[styles.tableCell, styles.tableCellPaidAmt]}>{formData.cash_amt || "0.00"}</Text>
+              </View>
 
-            <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 20 }}>
-              {qrCodeUrl && <Image style={styles.qrCode} src={qrCodeUrl} />}
+              {/* Filler rows to maintain table structure */}
+              {Array.from({ length: 9 }).map((_, index) => (
+                <View style={[styles.fillerRow, { fontFamily: 'Times-Roman' }]} key={`filler-${index}`}>
+                  <Text style={[styles.fillerCellHeader]}></Text>
+                  <View style={[styles.divider1, { marginTop: -2 }]} />
+                  <Text style={[styles.fillerCellDescription]}></Text>
+                  <View style={[styles.divider1, { marginTop: -2 }]} />
+                  <Text style={[styles.fillerCellTotalAmt]}></Text>
+                  <View style={[styles.divider1, { marginTop: -2 }]} />
+                  <Text style={[styles.fillerCellBalanceAmt]}></Text>
+                  <View style={[styles.divider1, { marginTop: -2 }]} />
+                  <Text style={[styles.fillerCellPaidAmt]}></Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={[styles.horizontalLine, { marginTop: -2 }]} />
+
+            {/* Footer Row */}
+            <View style={[styles.tableRow, { fontFamily: 'Times-Bold' }]}>
+              <Text style={[styles.tableCell, styles.tableCellHeader, styles.lastheight]}></Text>
+              <View style={[styles.divider1, { marginTop: -2 }]} />
+              <Text style={[styles.tableCell, styles.tableCellDescription, styles.lastheight]}>Total</Text>
+              <View style={[styles.divider1, { marginTop: -2 }]} />
+              <Text style={[styles.tableCell, styles.tableCellTotalAmt, styles.lastheight]}>{formData.total_amt || "0.00"}</Text>
+              <View style={[styles.divider1, { marginTop: -2 }]} />
+              <Text style={[styles.tableCell, styles.tableCellBalanceAmt, styles.lastheight]}>{formData.discount_amt || "0.00"}</Text>
+              <View style={[styles.divider1, { marginTop: -2 }]} />
+              <Text style={[styles.tableCell, styles.tableCellPaidAmt, styles.lastheight]}>{formData.cash_amt || "0.00"}</Text>
+            </View>
+
+            <View style={[styles.horizontalLine, { marginTop: -2 }]} />
+
+            {/* Amount in words */}
+            <View style={styles.summaryContainer}>
+              <View style={styles.summaryRow}>
+                <View style={styles.summaryLeft}>
+                  <View style={styles.summaryItem}>
+                    <Text>Amount in Words:</Text>
+                  </View>
+                  <View style={styles.summaryItem}>
+                    <Text>Rupees {amountInWords} Only</Text>
+                  </View>
+                </View>
+                <View style={styles.summaryRight}>
+                  {/* Empty for alignment */}
+                </View>
+              </View>
+            </View>
+
+            <View style={{ alignItems: "center", fontFamily: 'Times-Bold', marginTop: 10 }}>
+              {/* QR Code centered */}
             </View>
 
             <View style={{ flexDirection: "row", marginTop: 20, justifyContent: "space-between", marginBottom: 3, fontFamily: 'Times-Bold' }}>
               {/* Left Side */}
               <View style={{ alignItems: "flex-start", paddingLeft: 10 }}>
-                <Text style={[styles.boldText]}>For Customer</Text>
+                <Text>For Customer</Text>
               </View>
 
               {/* Right Side */}
               <View style={{ alignItems: "flex-end", paddingRight: 10 }}>
-                <Text style={[styles.boldText]}>For NEW FRIEND'S JEWELLERY</Text>
+                <Text>For {company?.company_name?.toUpperCase() || "NEW FRIEND'S JEWELLERY"}</Text>
               </View>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {qrCodeUrl && (
+                <Image
+                  source={{ uri: qrCodeUrl }}
+                  style={styles.qrCode}
+                />
+              )}
             </View>
           </View>
         </View>

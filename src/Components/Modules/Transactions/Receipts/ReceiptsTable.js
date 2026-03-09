@@ -14,7 +14,7 @@ const ReceiptsTable = () => {
   const columns = React.useMemo(
     () => [
       {
-        Header: 'Sr. No.',
+        Header: 'S No.',
         Cell: ({ row }) => row.index + 1, // Generate a sequential number based on the row index
       },
       {
@@ -29,6 +29,10 @@ const ReceiptsTable = () => {
       {
         Header: 'Receipt No',
         accessor: 'receipt_no',
+      },
+      {
+        Header: 'Invoice No',
+        accessor: 'invoice_number',
       },
       {
         Header: 'Account Name',
