@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
-import DataTable from '../../../Pages/InputField/TableLayout'; // Import the reusable DataTable component
-import { FaEdit, FaTrash } from 'react-icons/fa';
-import { Button, Row, Col } from 'react-bootstrap';
-import './ReceiptsTable.css';
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import DataTable from "../../../Pages/InputField/TableLayout"; // Import the reusable DataTable component
+import { FaEdit, FaTrash } from "react-icons/fa";
+import { Button, Row, Col } from "react-bootstrap";
+import "./ReceiptsTable.css";
 import { AuthContext } from "../../../Pages/Login/Context";
 import baseURL from "../../../../Url/NodeBaseURL";
 
@@ -14,132 +14,155 @@ const ReceiptsTable = () => {
   const columns = React.useMemo(
     () => [
       {
-        Header: 'S No.',
+        Header: "S No.",
         Cell: ({ row }) => row.index + 1, // Generate a sequential number based on the row index
       },
       {
-        Header: 'Date',
-        accessor: 'date', // Key from the data
-        Cell: ({ value }) => new Date(value).toLocaleDateString('en-IN'), // Format date
+        Header: "Date",
+        accessor: "date", // Key from the data
+        Cell: ({ value }) => new Date(value).toLocaleDateString("en-IN"), // Format date
       },
       {
-        Header: 'Mode',
-        accessor: 'mode',
+        Header: "Transaction Type",
+        accessor: "transaction_type",
       },
       {
-        Header: 'Receipt No',
-        accessor: 'receipt_no',
+        Header: "Mode",
+        accessor: "mode",
       },
       {
-        Header: 'Invoice No',
-        accessor: 'invoice_number',
+        Header: "Receipt No",
+        accessor: "receipt_no",
       },
       {
-        Header: 'Account Name',
-        accessor: 'account_name',
+        Header: "Invoice No",
+        accessor: "invoice_number",
       },
       {
-        Header: 'Reference Number',
-        accessor: 'cheque_number',
-        Cell: ({ value }) => (value ? value : 'N/A'), // Display 'N/A' if null
+        Header: "Account Name",
+        accessor: "account_name",
       },
       {
-        Header: 'Total Amt',
-        accessor: 'total_amt',
+        Header: "Reference Number",
+        accessor: "cheque_number",
+        Cell: ({ value }) => (value ? value : "N/A"), // Display 'N/A' if null
       },
       {
-        Header: 'Paid Amt',
-        accessor: 'discount_amt',
+        Header: "Total Amt",
+        accessor: "total_amt",
       },
       {
-        Header: 'Bal Amt',
-        accessor: 'cash_amt',
+        Header: "Paid Amt",
+        accessor: "discount_amt",
       },
       {
-        Header: 'Remarks',
-        accessor: 'remarks',
+        Header: "Bal Amt",
+        accessor: "cash_amt",
+      },
+      {
+        Header: "Remarks",
+        accessor: "remarks",
       },
       {
         Header: "Receipt",
-        Cell: ({ row }) =>
+        Cell: ({ row }) => (
           // row.original.invoice_generated === "Yes" && row.original.invoice_number ? (
           <a
             href={`${baseURL}/invoices/${row.original.receipt_no}.pdf`} // Fetch from backend
             target="_blank"
             rel="noopener noreferrer"
-            style={{ textDecoration: 'none' }}
+            style={{ textDecoration: "none" }}
           >
             📝 View
           </a>
+        ),
         //   ) : (
         //     "Not Available"
         //   ),
         // id: "invoice",
       },
       // Conditionally include Actions column only for ADMIN
-      ...(userName === "ADMIN" ? [
-        {
-          Header: 'Actions',
-          accessor: 'actions',
-          Cell: ({ row }) => (
-            <div>
-              <FaEdit
-                style={{ color: 'blue', cursor: 'pointer', marginRight: '10px' }}
-                onClick={() => handleEdit(row.original.id, row.original.invoice_number)}
-              />
+      ...(userName === "ADMIN"
+        ? [
+            {
+              Header: "Actions",
+              accessor: "actions",
+              Cell: ({ row }) => (
+                <div>
+                  <FaEdit
+                    style={{
+                      color: "blue",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                    }}
+                    onClick={() =>
+                      handleEdit(row.original.id, row.original.invoice_number)
+                    }
+                  />
 
-              <FaTrash
-                style={{ color: 'red', cursor: 'pointer' }}
-                onClick={() => handleDelete(row.original.id)}
-              />
-            </div>
-          ),
-        }
-      ] : []) // Empty array if not ADMIN (column excluded)
+                  <FaTrash
+                    style={{ color: "red", cursor: "pointer" }}
+                    onClick={() => handleDelete(row.original.id)}
+                  />
+                </div>
+              ),
+            },
+          ]
+        : []), // Empty array if not ADMIN (column excluded)
     ],
-    [data]
+    [data],
   );
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${baseURL}/get/payments`); // Fetch data from the endpoint
+        const response = await fetch(`${baseURL}/get/payments`);
         const result = await response.json();
 
         if (result?.payments) {
-          // Filter the data where transaction_type === "Payment"
-          const filteredPayments = result.payments.filter(payment => payment.transaction_type === "Receipt");
-          setData(filteredPayments); // Set filtered data
+          // Filter for Receipt and Advance Receipt
+          const filteredPayments = result.payments.filter(
+            (payment) =>
+              payment.transaction_type === "Receipt" ||
+              payment.transaction_type === "Advance Receipt",
+          );
+
+          setData(filteredPayments);
         }
       } catch (error) {
-        console.error('Error fetching payments:', error);
+        console.error("Error fetching payments:", error);
       }
     };
+
     fetchData();
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this Receipt?')) return;
+    if (!window.confirm("Are you sure you want to delete this Receipt?"))
+      return;
 
     try {
       const response = await fetch(`${baseURL}/delete/receipt/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (response.ok) {
         // Success message
-        alert('Receipt deleted successfully');
+        alert("Receipt deleted successfully");
 
         // Update state after successful deletion
         setData((prevData) => prevData.filter((payment) => payment.id !== id));
       } else {
         const result = await response.json();
-        console.error('Error deleting Receipt:', result.message || 'Unknown error');
-        alert(result.message || 'Failed to delete Receipt. Please try again.');
+        console.error(
+          "Error deleting Receipt:",
+          result.message || "Unknown error",
+        );
+        alert(result.message || "Failed to delete Receipt. Please try again.");
       }
     } catch (error) {
-      console.error('Error deleting Receipt:', error);
-      alert('An error occurred while deleting the Receipt. Please try again.');
+      console.error("Error deleting Receipt:", error);
+      alert("An error occurred while deleting the Receipt. Please try again.");
     }
   };
 
@@ -156,9 +179,8 @@ const ReceiptsTable = () => {
     }
   };
 
-
   const handleCreate = () => {
-    navigate('/receipts'); // Navigate to the payments creation page
+    navigate("/receipts"); // Navigate to the payments creation page
   };
 
   return (
@@ -170,7 +192,7 @@ const ReceiptsTable = () => {
             <Button
               className="create_but"
               onClick={handleCreate}
-              style={{ backgroundColor: '#a36e29', borderColor: '#a36e29' }}
+              style={{ backgroundColor: "#a36e29", borderColor: "#a36e29" }}
             >
               + Create
             </Button>
@@ -178,7 +200,6 @@ const ReceiptsTable = () => {
         </Row>
 
         <DataTable columns={columns} data={[...data].reverse()} />
-
       </div>
     </div>
   );

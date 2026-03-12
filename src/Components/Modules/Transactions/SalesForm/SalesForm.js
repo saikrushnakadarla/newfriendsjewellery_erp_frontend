@@ -1603,9 +1603,10 @@ const SalesForm = () => {
     ? salesNetAmount
     : salesTaxableAmount;
 
-  const [selectedAdvanceReceiptAmount, setSelectedAdvanceReceiptAmount] = useState(location.state?.advance_receipt_amt || 0);
+  const [selectedAdvanceReceiptAmount, setSelectedAdvanceReceiptAmount] =
+    useState(location.state?.advance_receipt_amt || 0);
   // Add this state with your other states
-const [selectedReceiptIds, setSelectedReceiptIds] = useState([]);
+  const [selectedReceiptIds, setSelectedReceiptIds] = useState([]);
 
   let totalAmount = 0;
   let discountAmt = 0;
@@ -1881,8 +1882,20 @@ const [selectedReceiptIds, setSelectedReceiptIds] = useState([]);
   //   ? manualNetPayAmount
   //   : netAmount - (schemeAmount + oldItemsAmount + salesAmountToPass);
 
-  const netPayableAmount = isManualNetMode ? manualNetPayAmount :  netAmount - (schemeAmount + salesAmountToPass + selectedAdvanceReceiptAmount);
-  const netPayAmount = netPayableAmount;
+  // const netPayableAmount = isManualNetMode
+  //   ? manualNetPayAmount
+  //   : netAmount -
+  //     (schemeAmount + salesAmountToPass + selectedAdvanceReceiptAmount);
+  // const netPayAmount = netPayableAmount;
+
+  const netPayableAmount = isManualNetMode
+  ? manualNetPayAmount
+  : Math.max(
+      0,
+      netAmount - (schemeAmount + salesAmountToPass + selectedAdvanceReceiptAmount)
+    );
+
+const netPayAmount = netPayableAmount;
 
   const [paymentDetails, setPaymentDetails] = useState({
     cash_amount: location.state?.cash_amount || "",
@@ -2127,177 +2140,187 @@ const [selectedReceiptIds, setSelectedReceiptIds] = useState([]);
   // };
 
   const handleSave = async () => {
-  if (!formData.account_name || !formData.mobile) {
-    alert("Please select the Customer or enter the Customer Mobile Number");
-    return;
-  }
+    if (!formData.account_name || !formData.mobile) {
+      alert("Please select the Customer or enter the Customer Mobile Number");
+      return;
+    }
 
-  try {
-    // Fetch tags
-    const tagResponse = await fetch(`${baseURL}/get/opening-tags-entry`);
-    const tagResult = await tagResponse.json();
-    const tagData = tagResult.result || [];
+    try {
+      // Fetch tags
+      const tagResponse = await fetch(`${baseURL}/get/opening-tags-entry`);
+      const tagResult = await tagResponse.json();
+      const tagData = tagResult.result || [];
 
-    // Check for sold items
-    const soldItem = repairDetails.find((item) => {
-      const matchedTag = tagData.find(
-        (data) => data.PCode_BarCode === item.code && data.Status === "Sold",
-      );
-      return matchedTag !== undefined;
-    });
+      // Check for sold items
+      const soldItem = repairDetails.find((item) => {
+        const matchedTag = tagData.find(
+          (data) => data.PCode_BarCode === item.code && data.Status === "Sold",
+        );
+        return matchedTag !== undefined;
+      });
 
-    // Optional: re-enable if needed
-    // if (soldItem) {
-    //   alert(`Item with code "${soldItem.code}" is already sold out.`);
-    //   return;
-    // }
+      // Optional: re-enable if needed
+      // if (soldItem) {
+      //   alert(`Item with code "${soldItem.code}" is already sold out.`);
+      //   return;
+      // }
 
-    // Handle invoice number
-    const allItemsAreNew = repairDetails.every((item) => item.id === "");
-    let updatedFormData = { ...formData };
+      // Handle invoice number
+      const allItemsAreNew = repairDetails.every((item) => item.id === "");
+      let updatedFormData = { ...formData };
 
-    if (allItemsAreNew) {
-      const response = await axios.get(`${baseURL}/lastInvoiceNumber`);
-      const latestInvoiceNumber = response.data.lastInvoiceNumber;
+      if (allItemsAreNew) {
+        const response = await axios.get(`${baseURL}/lastInvoiceNumber`);
+        const latestInvoiceNumber = response.data.lastInvoiceNumber;
 
-      updatedFormData = {
-        ...formData,
-        invoice_number: latestInvoiceNumber,
+        updatedFormData = {
+          ...formData,
+          invoice_number: latestInvoiceNumber,
+        };
+
+        setFormData(updatedFormData);
+      }
+
+      // Prepare payload
+      const dataToSave = {
+        repairDetails: repairDetails.map((item) => ({
+          ...item,
+          invoice_number: updatedFormData.invoice_number,
+          customer_id: updatedFormData.customer_id,
+          mobile: updatedFormData.mobile,
+          account_name: updatedFormData.account_name,
+          email: updatedFormData.email,
+          address1: updatedFormData.address1,
+          address2: updatedFormData.address2,
+          city: updatedFormData.city,
+          pincode: updatedFormData.pincode,
+          state: updatedFormData.state,
+          state_code: updatedFormData.state_code,
+          aadhar_card: updatedFormData.aadhar_card,
+          gst_in: updatedFormData.gst_in,
+          pan_card: updatedFormData.pan_card,
+          terms: updatedFormData.terms,
+          cash_amount: paymentDetails.cash_amount || 0,
+          card_amt: paymentDetails.card_amt || 0,
+          chq_amt: paymentDetails.chq_amt || 0,
+          online_amt: paymentDetails.online_amt || 0,
+        })),
+        totalAmount: totalAmount,
+        discountAmt: discountAmt,
+        festivalDiscountAmt: festivalDiscountAmt,
+        taxableAmount: taxableAmount,
+        taxAmount: taxAmount,
+        netAmount: netAmount,
+        oldItems: oldSalesData,
+        memberSchemes: schemeSalesData,
+        oldItemsAmount: oldItemsAmount || 0,
+        schemeAmount: schemeAmount || 0,
+        salesNetAmount: salesAmountToPass || 0,
+        salesTaxableAmount: salesTaxableAmount || 0,
+        selectedAdvanceReceiptAmount: selectedAdvanceReceiptAmount || 0,
       };
 
-      setFormData(updatedFormData);
-    }
+      // Save repair details first
+      const saveResponse = await axios.post(
+        `${baseURL}/save-repair-details`,
+        dataToSave,
+      );
 
-    // Prepare payload
-    const dataToSave = {
-      repairDetails: repairDetails.map((item) => ({
-        ...item,
-        invoice_number: updatedFormData.invoice_number,
-        customer_id: updatedFormData.customer_id,
-        mobile: updatedFormData.mobile,
-        account_name: updatedFormData.account_name,
-        email: updatedFormData.email,
-        address1: updatedFormData.address1,
-        address2: updatedFormData.address2,
-        city: updatedFormData.city,
-        pincode: updatedFormData.pincode,
-        state: updatedFormData.state,
-        state_code: updatedFormData.state_code,
-        aadhar_card: updatedFormData.aadhar_card,
-        gst_in: updatedFormData.gst_in,
-        pan_card: updatedFormData.pan_card,
-        terms: updatedFormData.terms,
-        cash_amount: paymentDetails.cash_amount || 0,
-        card_amt: paymentDetails.card_amt || 0,
-        chq_amt: paymentDetails.chq_amt || 0,
-        online_amt: paymentDetails.online_amt || 0,
-      })),
-      totalAmount: totalAmount,
-      discountAmt: discountAmt,
-      festivalDiscountAmt: festivalDiscountAmt,
-      taxableAmount: taxableAmount,
-      taxAmount: taxAmount,
-      netAmount: netAmount,
-      oldItems: oldSalesData,
-      memberSchemes: schemeSalesData,
-      oldItemsAmount: oldItemsAmount || 0,
-      schemeAmount: schemeAmount || 0,
-      salesNetAmount: salesAmountToPass || 0,
-      salesTaxableAmount: salesTaxableAmount || 0,
-      selectedAdvanceReceiptAmount: selectedAdvanceReceiptAmount || 0,
-    };
-
-    // Save repair details first
-    const saveResponse = await axios.post(`${baseURL}/save-repair-details`, dataToSave);
-    
-    // After saving repair details, update the advance receipts with the invoice number
-    if (selectedAdvanceReceiptAmount > 0 && selectedReceiptIds && selectedReceiptIds.length > 0) {
-      try {
-        await axios.post(`${baseURL}/update-advance-receipts`, {
-          receiptIds: selectedReceiptIds,
-          invoiceNumber: updatedFormData.invoice_number,
-          mobile: formData.mobile,
-          account_name: formData.account_name
-        });
-        console.log("Advance receipts updated successfully");
-      } catch (updateError) {
-        console.error("Error updating advance receipts:", updateError);
-        // Optionally show warning but don't block the main flow
-        alert("Warning: Advance receipts could not be updated, but invoice was saved.");
+      // After saving repair details, update the advance receipts with the invoice number
+      if (
+        selectedAdvanceReceiptAmount > 0 &&
+        selectedReceiptIds &&
+        selectedReceiptIds.length > 0
+      ) {
+        try {
+          await axios.post(`${baseURL}/update-advance-receipts`, {
+            receiptIds: selectedReceiptIds,
+            invoiceNumber: updatedFormData.invoice_number,
+            mobile: formData.mobile,
+            account_name: formData.account_name,
+            invoiceAmount: netAmount,
+          });
+          console.log("Advance receipts updated successfully");
+        } catch (updateError) {
+          console.error("Error updating advance receipts:", updateError);
+          // Optionally show warning but don't block the main flow
+          alert(
+            "Warning: Advance receipts could not be updated, but invoice was saved.",
+          );
+        }
       }
-    }
 
-    alert("Sales added successfully");
+      alert("Sales added successfully");
 
-    // Generate PDF
-    const pdfDoc = (
-      <PDFLayout
-        formData={updatedFormData}
-        repairDetails={repairDetails}
-        cash_amount={paymentDetails.cash_amount || 0}
-        card_amt={paymentDetails.card_amt || 0}
-        chq_amt={paymentDetails.chq_amt || 0}
-        online_amt={paymentDetails.online_amt || 0}
-        taxableAmount={taxableAmount}
-        taxAmount={taxAmount}
-        discountAmt={discountAmt}
-        festivalDiscountAmt={festivalDiscountAmt}
-        oldItemsAmount={oldItemsAmount}
-        schemeAmount={schemeAmount}
-        salesNetAmount={salesAmountToPass}
-        salesTaxableAmount={salesTaxableAmount}
-        selectedAdvanceReceiptAmount={selectedAdvanceReceiptAmount}
-        netAmount={netAmount}
-        netPayableAmount={netPayableAmount}
-        company={company}
-        product={product}
-      />
-    );
+      // Generate PDF
+      const pdfDoc = (
+        <PDFLayout
+          formData={updatedFormData}
+          repairDetails={repairDetails}
+          cash_amount={paymentDetails.cash_amount || 0}
+          card_amt={paymentDetails.card_amt || 0}
+          chq_amt={paymentDetails.chq_amt || 0}
+          online_amt={paymentDetails.online_amt || 0}
+          taxableAmount={taxableAmount}
+          taxAmount={taxAmount}
+          discountAmt={discountAmt}
+          festivalDiscountAmt={festivalDiscountAmt}
+          oldItemsAmount={oldItemsAmount}
+          schemeAmount={schemeAmount}
+          salesNetAmount={salesAmountToPass}
+          salesTaxableAmount={salesTaxableAmount}
+          selectedAdvanceReceiptAmount={selectedAdvanceReceiptAmount}
+          netAmount={netAmount}
+          netPayableAmount={netPayableAmount}
+          company={company}
+          product={product}
+        />
+      );
 
-    const pdfBlob = await pdf(pdfDoc).toBlob();
+      const pdfBlob = await pdf(pdfDoc).toBlob();
 
-    // Save PDF to server
-    await handleSavePDFToServer(pdfBlob, updatedFormData.invoice_number);
+      // Save PDF to server
+      await handleSavePDFToServer(pdfBlob, updatedFormData.invoice_number);
 
-    // Open preview in new tab
-    const previewURL = `${baseURL}/invoices/${updatedFormData.invoice_number}.pdf`;
-    window.open(previewURL, "_blank");
+      // Open preview in new tab
+      const previewURL = `${baseURL}/invoices/${updatedFormData.invoice_number}.pdf`;
+      window.open(previewURL, "_blank");
 
-    // Attempt to share
-    const pdfFile = new File(
-      [pdfBlob],
-      `${updatedFormData.invoice_number}.pdf`,
-      {
-        type: "application/pdf",
-      },
-    );
+      // Attempt to share
+      const pdfFile = new File(
+        [pdfBlob],
+        `${updatedFormData.invoice_number}.pdf`,
+        {
+          type: "application/pdf",
+        },
+      );
 
-    if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-      try {
-        await navigator.share({
-          title: `Invoice ${updatedFormData.invoice_number}`,
-          text: "Here is your invoice PDF.",
-          files: [pdfFile],
-        });
-        console.log("PDF shared successfully");
-      } catch (err) {
-        console.warn("Sharing was cancelled or failed:", err);
+      if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+        try {
+          await navigator.share({
+            title: `Invoice ${updatedFormData.invoice_number}`,
+            text: "Here is your invoice PDF.",
+            files: [pdfFile],
+          });
+          console.log("PDF shared successfully");
+        } catch (err) {
+          console.warn("Sharing was cancelled or failed:", err);
+        }
+      } else {
+        console.warn("Sharing not supported on this device/browser.");
       }
-    } else {
-      console.warn("Sharing not supported on this device/browser.");
-    }
 
-    // Cleanup
-    clearData();
-    resetForm();
-    navigate("/salestable");
-    window.location.reload();
-    await handleCheckout();
-  } catch (error) {
-    console.error("Error saving data:", error);
-    alert("Error saving data");
-  }
-};
+      // Cleanup
+      clearData();
+      resetForm();
+      navigate("/salestable");
+      window.location.reload();
+      await handleCheckout();
+    } catch (error) {
+      console.error("Error saving data:", error);
+      alert("Error saving data");
+    }
+  };
   const handleSavePDFToServer = async (pdfBlob, invoiceNumber) => {
     const formData = new FormData();
     formData.append("invoice", pdfBlob, `${invoiceNumber}.pdf`);

@@ -89,17 +89,27 @@ const RepairsTable = () => {
         Cell: ({ value }) => value || 0
       },
       {
-        Header: 'Scheme Amt',
-        accessor: 'scheme_amt',
-        Cell: ({ value }) => value || 0
-      },
-      {
-        Header: 'SaleReturn Amt',
-        accessor: 'sale_return_amt',
-        Cell: ({ value }) => value || 0
-      },
-      {
         Header: 'Net Amt',
+        accessor: 'net_amount',
+        Cell: ({ value }) => value || 0
+      },
+      // {
+      //   Header: 'Scheme Amt',
+      //   accessor: 'scheme_amt',
+      //   Cell: ({ value }) => value || 0
+      // },
+      // {
+      //   Header: 'SaleReturn Amt',
+      //   accessor: 'sale_return_amt',
+      //   Cell: ({ value }) => value || 0
+      // },
+      {
+        Header: 'Advance Receipt Amt',
+        accessor: 'advance_receipt_amt',
+        Cell: ({ value }) => value || 0
+      },
+      {
+        Header: 'Net Payable Amt',
         accessor: 'net_bill_amount',
         Cell: ({ value }) => value || 0
       },
