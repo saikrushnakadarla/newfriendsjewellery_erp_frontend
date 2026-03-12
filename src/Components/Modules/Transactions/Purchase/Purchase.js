@@ -1593,7 +1593,7 @@ const URDPurchase = () => {
                   }}
                 />
               </Col>
-              <Col xs={12} md={2}>
+              <Col xs={12} md={1}>
                 <InputField
                   label="Rbarcode"
                   name="rbarcode"
@@ -1621,7 +1621,7 @@ const URDPurchase = () => {
                     <InputField label="Gross Wt" type="number" value={formData.gross_weight}
                       onChange={(e) => handleChange("gross_weight", e.target.value)} />
                   </Col> */}
-                  <Col xs={12} md={1} className="d-flex align-items-center">
+                  <Col xs={12} md={2} className="d-flex align-items-center">
                     <Button
                       variant="outline-secondary"
                       size="sm"
