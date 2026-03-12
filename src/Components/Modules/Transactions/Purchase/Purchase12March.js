@@ -22,9 +22,6 @@ const URDPurchase = () => {
   console.log("Invoice=", invoice)
   const initialSearchValue = location.state?.mobile || '';
 
-  const [showWeightSimulator, setShowWeightSimulator] = useState(false);
-  const [simulatorWeight, setSimulatorWeight] = useState("");
-
   const [formData, setFormData] = useState({
     id: "",
     customer_id: "",
@@ -210,16 +207,6 @@ const URDPurchase = () => {
 
     fetchProductIds();
   }, []);
-
-  const handleWeightFromSimulator = () => {
-    if (simulatorWeight && !isNaN(simulatorWeight)) {
-      handleChange("gross_weight", simulatorWeight);
-      setShowWeightSimulator(false);
-      setSimulatorWeight("");
-    } else {
-      alert("Please enter a valid weight");
-    }
-  };
 
   useEffect(() => {
     if (mobile) {
@@ -1364,7 +1351,7 @@ const URDPurchase = () => {
           <div className="purchase-form" style={{ marginTop: "-10px" }}>
             <div className="purchase-form-left">
               <Col className="urd-form1-section">
-                <h4 className="mb-4">Supplier Details</h4>
+                <h4 className="mb-4">Supplier Details</h4>
                 <Row>
                   <Col xs={12} md={4} className="d-flex align-items-center">
                     <div style={{ flex: 1 }}>
@@ -1402,7 +1389,7 @@ const URDPurchase = () => {
                           const existing = customers.find((c) => c.mobile === inputMobile);
                           if (existing) {
                             handleCustomerChange(existing.account_id);
-
+                            
                           }
                         }}
                         options={customers.map((c) => ({ value: c.mobile, label: c.mobile }))}
@@ -1452,7 +1439,7 @@ const URDPurchase = () => {
                         const existing = customers.find((c) => c.account_name.toUpperCase() === inputName);
                         if (existing) {
                           handleCustomerChange(existing.account_id);
-
+                          
                         }
                       }}
                       options={customers.map((c) => ({
@@ -1617,36 +1604,9 @@ const URDPurchase = () => {
               </Col>
               {formData.Pricing !== "By fixed" && (
                 <>
-                  {/* <Col xs={12} md={1}>
+                  <Col xs={12} md={1}>
                     <InputField label="Gross Wt" type="number" value={formData.gross_weight}
                       onChange={(e) => handleChange("gross_weight", e.target.value)} />
-                  </Col> */}
-                  <Col xs={12} md={1} className="d-flex align-items-center">
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      onClick={() => setShowWeightSimulator(true)}
-                      style={{
-                        height: "32px",
-                        marginRight: "5px",
-                        marginBottom: "20px",
-                        backgroundColor: '#f0f0f0',
-                        borderColor: '#a36e29',
-                        color: '#a36e29',
-                        fontSize: '12px',
-                        padding: '2px 8px'
-                      }}
-                    >
-                      ⚖️ Wt
-                    </Button>
-                    <div style={{ flex: 1 }}>
-                      <InputField
-                        label="Gross Wt"
-                        type="number"
-                        value={formData.gross_weight}
-                        onChange={(e) => handleChange("gross_weight", e.target.value)}
-                      />
-                    </div>
                   </Col>
                   <Col xs={12} md={1}>
                     <InputField label="Stone Wt" type="number" value={formData.stone_weight}
@@ -2062,85 +2022,6 @@ const URDPurchase = () => {
         handleCloseModal={handleCloseStoneModal}
         handleUpdateStoneDetails={handleUpdateStoneDetails}
       /> */}
-
-      {/* Weight Simulator Modal */}
-      <Modal
-        show={showWeightSimulator}
-        onHide={() => {
-          setShowWeightSimulator(false);
-          setSimulatorWeight("");
-        }}
-        size="sm"
-        centered
-      >
-        <Modal.Header closeButton style={{ backgroundColor: '#a36e29', color: 'white' }}>
-          <Modal.Title>Weight Simulator</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form.Group>
-            <Form.Label>Enter Weight (grams)</Form.Label>
-            <Form.Control
-              type="number"
-              step="0.001"
-              value={simulatorWeight}
-              onChange={(e) => setSimulatorWeight(e.target.value)}
-              placeholder="e.g., 25.500"
-              autoFocus
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleWeightFromSimulator();
-                }
-              }}
-            />
-          </Form.Group>
-
-          {/* Quick weight presets for testing */}
-          <div className="mt-3">
-            <small className="text-muted">Quick presets:</small>
-            <div className="d-flex gap-2 mt-1">
-              <Button
-                size="sm"
-                variant="outline-secondary"
-                onClick={() => setSimulatorWeight("10.500")}
-              >
-                10.5g
-              </Button>
-              <Button
-                size="sm"
-                variant="outline-secondary"
-                onClick={() => setSimulatorWeight("25.000")}
-              >
-                25g
-              </Button>
-              <Button
-                size="sm"
-                variant="outline-secondary"
-                onClick={() => setSimulatorWeight("50.750")}
-              >
-                50.75g
-              </Button>
-            </div>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setShowWeightSimulator(false);
-              setSimulatorWeight("");
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleWeightFromSimulator}
-            style={{ backgroundColor: '#a36e29', borderColor: '#a36e29' }}
-          >
-            Set Weight
-          </Button>
-        </Modal.Footer>
-      </Modal>
 
       <StoneDetailsModal
         show={show}
