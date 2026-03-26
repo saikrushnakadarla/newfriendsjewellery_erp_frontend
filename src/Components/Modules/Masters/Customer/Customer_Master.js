@@ -378,11 +378,11 @@ const handleSubmit = async (e) => {
     const totalSecondary = secondaryEndpoints.length;
 
     if (successfulSecondary === totalSecondary) {
-      alert(`Customer ${id ? "updated" : "created"} successfully in all databases!`);
+      alert(`Customer ${id ? "updated" : "created"} successfully!`);
     } else if (successfulSecondary > 0) {
-      alert(`Customer ${id ? "updated" : "created"} successfully in main database, but only in ${successfulSecondary} out of ${totalSecondary} secondary databases.`);
+      alert(`Customer ${id ? "updated" : "created"} successfully!`);
     } else {
-      alert(`Customer ${id ? "updated" : "created"} successfully in main database, but failed to save in all secondary databases.`);
+      alert(`Customer ${id ? "updated" : "created"} successfully!`);
     }
 
     // ------------------------------
