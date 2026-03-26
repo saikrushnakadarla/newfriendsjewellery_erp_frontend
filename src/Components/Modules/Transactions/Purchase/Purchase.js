@@ -226,62 +226,62 @@ const URDPurchase = () => {
   };
 
   // Socket.io connection for weight simulator
-  useEffect(() => {
-    console.log('Attempting to connect to weight simulator...');
+  // useEffect(() => {
+  //   console.log('Attempting to connect to weight simulator...');
 
-    // Connect to the simulator app with explicit configuration
-    const socket = io('http://localhost:3001', {
-      transports: ['websocket', 'polling'], // Try both connection methods
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
-      timeout: 10000
-    });
+  //   // Connect to the simulator app with explicit configuration
+  //   const socket = io('http://localhost:3001', {
+  //     transports: ['websocket', 'polling'], // Try both connection methods
+  //     reconnection: true,
+  //     reconnectionAttempts: 10,
+  //     reconnectionDelay: 1000,
+  //     timeout: 10000
+  //   });
 
-    socket.on('connect', () => {
-      console.log('✅ Connected to weight simulator');
-      setSocketConnected(true);
-      setSimulatorStatus('Connected to Simulator');
-    });
+  //   socket.on('connect', () => {
+  //     console.log('✅ Connected to weight simulator');
+  //     setSocketConnected(true);
+  //     setSimulatorStatus('Connected to Simulator');
+  //   });
 
-    socket.on('connect_error', (error) => {
-      console.log('❌ Connection error:', error.message);
-      setSocketConnected(false);
-      setSimulatorStatus('Connection Error');
-    });
+  //   socket.on('connect_error', (error) => {
+  //     console.log('❌ Connection error:', error.message);
+  //     setSocketConnected(false);
+  //     setSimulatorStatus('Connection Error');
+  //   });
 
-    socket.on('disconnect', (reason) => {
-      console.log('❌ Disconnected from weight simulator:', reason);
-      setSocketConnected(false);
-      setSimulatorStatus('Disconnected from Simulator');
-    });
+  //   socket.on('disconnect', (reason) => {
+  //     console.log('❌ Disconnected from weight simulator:', reason);
+  //     setSocketConnected(false);
+  //     setSimulatorStatus('Disconnected from Simulator');
+  //   });
 
-    socket.on('weight-update', (weight) => {
-      console.log('📊 Received weight from simulator:', weight);
-      handleChange('gross_weight', weight);
+  //   socket.on('weight-update', (weight) => {
+  //     console.log('📊 Received weight from simulator:', weight);
+  //     handleChange('gross_weight', weight);
 
-      // Show notification
-      const notification = document.createElement('div');
-      notification.style.position = 'fixed';
-      notification.style.top = '20px';
-      notification.style.right = '20px';
-      notification.style.backgroundColor = '#4CAF50';
-      notification.style.color = 'white';
-      notification.style.padding = '15px 20px';
-      notification.style.borderRadius = '5px';
-      notification.style.zIndex = '9999';
-      notification.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
-      notification.style.fontWeight = 'bold';
-      notification.textContent = `⚖️ Weight received: ${weight}g`;
-      document.body.appendChild(notification);
-      setTimeout(() => notification.remove(), 3000);
-    });
+  //     // Show notification
+  //     const notification = document.createElement('div');
+  //     notification.style.position = 'fixed';
+  //     notification.style.top = '20px';
+  //     notification.style.right = '20px';
+  //     notification.style.backgroundColor = '#4CAF50';
+  //     notification.style.color = 'white';
+  //     notification.style.padding = '15px 20px';
+  //     notification.style.borderRadius = '5px';
+  //     notification.style.zIndex = '9999';
+  //     notification.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+  //     notification.style.fontWeight = 'bold';
+  //     notification.textContent = `⚖️ Weight received: ${weight}g`;
+  //     document.body.appendChild(notification);
+  //     setTimeout(() => notification.remove(), 3000);
+  //   });
 
-    return () => {
-      console.log('Cleaning up socket connection');
-      socket.disconnect();
-    };
-  }, []);
+  //   return () => {
+  //     console.log('Cleaning up socket connection');
+  //     socket.disconnect();
+  //   };
+  // }, []);
 
   useEffect(() => {
     if (mobile) {
@@ -1679,11 +1679,11 @@ const URDPurchase = () => {
               </Col>
               {formData.Pricing !== "By fixed" && (
                 <>
-                  {/* <Col xs={12} md={1}>
+                  <Col xs={12} md={1}>
                     <InputField label="Gross Wt" type="number" value={formData.gross_weight}
                       onChange={(e) => handleChange("gross_weight", e.target.value)} />
-                  </Col> */}
-                  <Col xs={12} md={2} className="d-flex align-items-center">
+                  </Col>
+                  {/* <Col xs={12} md={2} className="d-flex align-items-center">
                     <Button
                       variant={socketConnected ? "success" : "outline-secondary"}
                       size="sm"
@@ -1726,7 +1726,7 @@ const URDPurchase = () => {
                         </small>
                       )}
                     </div>
-                  </Col>
+                  </Col> */}
                   <Col xs={12} md={1}>
                     <InputField label="Stone Wt" type="number" value={formData.stone_weight}
                       onChange={(e) => handleChange("stone_weight", e.target.value)} />
