@@ -10,6 +10,7 @@ import TagEntry from "./TagEntry";
 import { Modal } from "react-bootstrap";
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import StoneDetailsModal from './StoneDetailsModal';
+import io from 'socket.io-client';
 
 const URDPurchase = () => {
   const navigate = useNavigate();
@@ -24,6 +25,9 @@ const URDPurchase = () => {
 
   const [showWeightSimulator, setShowWeightSimulator] = useState(false);
   const [simulatorWeight, setSimulatorWeight] = useState("");
+
+  const [socketConnected, setSocketConnected] = useState(false);
+  const [simulatorStatus, setSimulatorStatus] = useState('Disconnected');
 
   const [formData, setFormData] = useState({
     id: "",
@@ -220,6 +224,64 @@ const URDPurchase = () => {
       alert("Please enter a valid weight");
     }
   };
+
+  // Socket.io connection for weight simulator
+  useEffect(() => {
+    console.log('Attempting to connect to weight simulator...');
+
+    // Connect to the simulator app with explicit configuration
+    const socket = io('http://localhost:3001', {
+      transports: ['websocket', 'polling'], // Try both connection methods
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      timeout: 10000
+    });
+
+    socket.on('connect', () => {
+      console.log('✅ Connected to weight simulator');
+      setSocketConnected(true);
+      setSimulatorStatus('Connected to Simulator');
+    });
+
+    socket.on('connect_error', (error) => {
+      console.log('❌ Connection error:', error.message);
+      setSocketConnected(false);
+      setSimulatorStatus('Connection Error');
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('❌ Disconnected from weight simulator:', reason);
+      setSocketConnected(false);
+      setSimulatorStatus('Disconnected from Simulator');
+    });
+
+    socket.on('weight-update', (weight) => {
+      console.log('📊 Received weight from simulator:', weight);
+      handleChange('gross_weight', weight);
+
+      // Show notification
+      const notification = document.createElement('div');
+      notification.style.position = 'fixed';
+      notification.style.top = '20px';
+      notification.style.right = '20px';
+      notification.style.backgroundColor = '#4CAF50';
+      notification.style.color = 'white';
+      notification.style.padding = '15px 20px';
+      notification.style.borderRadius = '5px';
+      notification.style.zIndex = '9999';
+      notification.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+      notification.style.fontWeight = 'bold';
+      notification.textContent = `⚖️ Weight received: ${weight}g`;
+      document.body.appendChild(notification);
+      setTimeout(() => notification.remove(), 3000);
+    });
+
+    return () => {
+      console.log('Cleaning up socket connection');
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     if (mobile) {
@@ -1623,29 +1685,46 @@ const URDPurchase = () => {
                   </Col> */}
                   <Col xs={12} md={2} className="d-flex align-items-center">
                     <Button
-                      variant="outline-secondary"
+                      variant={socketConnected ? "success" : "outline-secondary"}
                       size="sm"
-                      onClick={() => setShowWeightSimulator(true)}
+                      onClick={() => {
+                        if (!socketConnected) {
+                          alert('Please open the Weight Simulator app first');
+                        }
+                      }}
                       style={{
                         height: "32px",
                         marginRight: "5px",
                         marginBottom: "20px",
-                        backgroundColor: '#f0f0f0',
-                        borderColor: '#a36e29',
-                        color: '#a36e29',
+                        backgroundColor: socketConnected ? '#28a745' : '#f0f0f0',
+                        borderColor: socketConnected ? '#28a745' : '#a36e29',
+                        color: socketConnected ? 'white' : '#a36e29',
                         fontSize: '12px',
-                        padding: '2px 8px'
+                        padding: '2px 8px',
+                        cursor: 'default'
                       }}
+                      title={socketConnected ? "Connected to Simulator" : "Run Weight Simulator app"}
                     >
-                      ⚖️ Wt
+                      {socketConnected ? "🔌 Online" : "⚖️ Offline"}
                     </Button>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, position: 'relative' }}>
                       <InputField
                         label="Gross Wt"
                         type="number"
                         value={formData.gross_weight}
                         onChange={(e) => handleChange("gross_weight", e.target.value)}
                       />
+                      {socketConnected && (
+                        <small style={{
+                          position: 'absolute',
+                          bottom: '-18px',
+                          left: '0',
+                          color: '#28a745',
+                          fontSize: '10px'
+                        }}>
+                          Auto-update from simulator
+                        </small>
+                      )}
                     </div>
                   </Col>
                   <Col xs={12} md={1}>

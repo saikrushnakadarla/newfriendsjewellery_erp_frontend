@@ -32,7 +32,7 @@ const useProductHandlers = () => {
     state: "",
     state_code: "",
     aadhar_card: "",
-    gst_in: "",
+    gst_in: "", 
     pan_card: "",
     terms: "Cash",
     date: "",

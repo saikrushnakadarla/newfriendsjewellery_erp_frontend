@@ -6,6 +6,9 @@ import axios from "axios";
 import { Row, Col, Button } from 'react-bootstrap';
 import baseURL from '../../../../Url/NodeBaseURL';
 import baseURL2 from '../../../../Url/NodeBaseURL2';
+import baseURL3 from '../../../../Url/NodeBaseURL3';
+import baseURL4 from '../../../../Url/NodeBaseURL4';
+import baseURL5 from '../../../../Url/NodeBaseURL5';
 import { FaUpload, FaTrash } from 'react-icons/fa';
 import Webcam from 'react-webcam';
 
@@ -268,109 +271,134 @@ function Customer_Master() {
     setImagePreviews(updatedPreviews);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!validateForm()) {
-      return;
+  if (!validateForm()) {
+    return;
+  }
+
+  setIsSaving(true);
+
+  try {
+    // Duplicate check (only on baseURL)
+    if (!id) {
+      const response = await fetch(`${baseURL}/get/account-details`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch data for duplicate check.");
+      }
+
+      const result = await response.json();
+      const isDuplicateMobile = result.some(
+        (item) => item.mobile === formData.mobile && item.account_id !== id
+      );
+
+      if (isDuplicateMobile) {
+        alert("This mobile number is already associated with another entry.");
+        setIsSaving(false);
+        return;
+      }
     }
 
-    setIsSaving(true);
+    // ------------------------------
+    // 1️⃣ Prepare FormData for MAIN DB (with images)
+    // ------------------------------
+    const formDataToSend = new FormData();
 
-    try {
-      // Duplicate check (only on baseURL)
-      if (!id) {
-        const response = await fetch(`${baseURL}/get/account-details`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch data for duplicate check.");
-        }
-
-        const result = await response.json();
-        const isDuplicateMobile = result.some(
-          (item) => item.mobile === formData.mobile && item.account_id !== id
-        );
-
-        if (isDuplicateMobile) {
-          alert("This mobile number is already associated with another entry.");
-          return;
-        }
+    Object.keys(formData).forEach(key => {
+      if (formData[key] !== undefined && formData[key] !== null) {
+        formDataToSend.append(key, formData[key]);
       }
+    });
 
-      // ------------------------------
-      // 1️⃣ Prepare FormData for MAIN DB
-      // ------------------------------
-      const formDataToSend = new FormData();
+    newImages.forEach(image => {
+      formDataToSend.append("images", image);
+    });
 
-      Object.keys(formData).forEach(key => {
-        if (formData[key] !== undefined && formData[key] !== null) {
-          formDataToSend.append(key, formData[key]);
-        }
-      });
-
-      newImages.forEach(image => {
-        formDataToSend.append("images", image);
-      });
-
-      if (existingImages.length > 0) {
-        formDataToSend.append(
-          "imagesToKeep",
-          JSON.stringify(existingImages)
-        );
-      }
-
-      // ------------------------------
-      // 2️⃣ Main API call (with images)
-      // ------------------------------
-      const endpoint1 = id
-        ? `${baseURL}/edit/account-details/${id}`
-        : `${baseURL}/account-details`;
-
-      const method1 = id ? "PUT" : "POST";
-
-      const response1 = await fetch(endpoint1, {
-        method: method1,
-        body: formDataToSend,
-      });
-
-      if (!response1.ok) {
-        const errorData = await response1.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed saving to main database");
-      }
-
-      // ------------------------------
-      // 3️⃣ SECOND DB POST (JSON only)
-      // ------------------------------
-      const jsonPayload = { ...formData };
-
-      const response2 = await fetch(`${baseURL2}/add-account`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(jsonPayload),
-      });
-
-      if (!response2.ok) {
-        console.warn("Warning: Failed to save data in second DB");
-        // We do NOT stop the flow — only warn
-      }
-
-      // ------------------------------
-      // ✔ SUCCESS
-      // ------------------------------
-      alert(`Customer ${id ? "updated" : "created"} successfully!`);
-
-      navigate(location.state?.from || "/customerstable", {
-        state: { mobile: formData.mobile },
-      });
-
-    } catch (error) {
-      console.error("Error:", error);
-      alert(error.message || "An error occurred while processing the request.");
-    } finally {
-      setIsSaving(false); // 🔥 End loading
+    if (existingImages.length > 0) {
+      formDataToSend.append(
+        "imagesToKeep",
+        JSON.stringify(existingImages)
+      );
     }
-  };
+
+    // ------------------------------
+    // 2️⃣ Main API call (with images)
+    // ------------------------------
+    const endpoint1 = id
+      ? `${baseURL}/edit/account-details/${id}`
+      : `${baseURL}/account-details`;
+
+    const method1 = id ? "PUT" : "POST";
+
+    const response1 = await fetch(endpoint1, {
+      method: method1,
+      body: formDataToSend,
+    });
+
+    if (!response1.ok) {
+      const errorData = await response1.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed saving to main database");
+    }
+
+    // ------------------------------
+    // 3️⃣ Prepare JSON payload for secondary DBs
+    // ------------------------------
+    const jsonPayload = { ...formData };
+
+    // Array of all secondary endpoints (POST only)
+    const secondaryEndpoints = [
+      { url: baseURL2, endpoint: "/add-account" },
+      { url: baseURL3, endpoint: "/account-details" },
+      { url: baseURL4, endpoint: "/account-details" },
+      { url: baseURL5, endpoint: "/account-details" }
+    ];
+
+    // Make all secondary API calls
+    const secondaryPromises = secondaryEndpoints.map(async ({ url, endpoint }) => {
+      try {
+        const response = await fetch(`${url}${endpoint}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(jsonPayload),
+        });
+        return { url, success: response.ok };
+      } catch (error) {
+        console.error(`Error saving to ${url}:`, error);
+        return { url, success: false };
+      }
+    });
+
+    const secondaryResults = await Promise.all(secondaryPromises);
+    
+    // Check results
+    const successfulSecondary = secondaryResults.filter(result => result.success === true).length;
+    const totalSecondary = secondaryEndpoints.length;
+
+    if (successfulSecondary === totalSecondary) {
+      alert(`Customer ${id ? "updated" : "created"} successfully in all databases!`);
+    } else if (successfulSecondary > 0) {
+      alert(`Customer ${id ? "updated" : "created"} successfully in main database, but only in ${successfulSecondary} out of ${totalSecondary} secondary databases.`);
+    } else {
+      alert(`Customer ${id ? "updated" : "created"} successfully in main database, but failed to save in all secondary databases.`);
+    }
+
+    // ------------------------------
+    // ✔ SUCCESS - Navigate
+    // ------------------------------
+    navigate(location.state?.from || "/customerstable", {
+      state: { mobile: formData.mobile },
+    });
+
+  } catch (error) {
+    console.error("Error:", error);
+    alert(error.message || "An error occurred while processing the request.");
+  } finally {
+    setIsSaving(false);
+  }
+};
 
 
   const handleBack = () => {
